@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adivina el Número - StreamGames</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .number-display {
+      font-size: 6rem;
+      font-weight: 900;
+      text-align: center;
+      background: linear-gradient(90deg, var(--pink), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1;
+    }
+    .secret-display {
+      font-size: 6rem;
+      font-weight: 900;
+      text-align: center;
+      color: rgba(255,255,255,0.1);
+      line-height: 1;
+    }
+    .guess-card {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 28px;
+      text-align: center;
+    }
+    .range-hint {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 12px;
+    }
+    .hint-chip {
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .hint-high { background: rgba(255,45,85,0.15); color: var(--pink); border: 1px solid rgba(255,45,85,0.3); }
+    .hint-low { background: rgba(59,130,246,0.15); color: #3b82f6; border: 1px solid rgba(59,130,246,0.3); }
+    .hint-warm { background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
+    .hint-cold { background: rgba(124,58,237,0.15); color: #7c3aed; border: 1px solid rgba(124,58,237,0.3); }
+    .guesses-list { display: flex; flex-direction: column; gap: 6px; max-height: 350px; overflow-y: auto; }
+    .guess-row {
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(255,255,255,0.04); border-radius: 8px; padding: 8px 12px;
+      font-size: 0.85rem;
+    }
+    .guess-row .g-user { color: var(--pink); }
+    .guess-row .g-num { font-weight: 700; font-size: 1rem; }
+    .guess-row .g-diff { color: var(--muted); font-size: 0.8rem; }
+    .winner-row { border: 1px solid #22c55e; background: rgba(34,197,94,0.1); }
+    .winner-row .g-num { color: #22c55e; }
+    .number-input-row { display: flex; gap: 10px; align-items: center; }
+    .number-input-row input {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      width: 120px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body class="gradient-bg">
+
+  <nav class="navbar">
+    <div class="logo">🎮 StreamGames</div>
+    <div class="connect-bar">
+      <span class="status-dot" id="statusDot"></span>
+      <input type="text" id="usernameInput" placeholder="@usuario de TikTok">
+      <button class="btn btn-primary" id="connectBtn" onclick="connectTikTok()">Conectar</button>
+      <button class="btn btn-danger" id="disconnectBtn" onclick="disconnectTikTok()" style="display:none">Desconectar</button>
+    </div>
+  </nav>
+
+  <div class="game-layout">
+    <div class="game-main">
+      <a href="../index.html" class="back-btn">← Volver al menú</a>
+
+      <div class="card">
+        <h2 style="margin-bottom:8px;">🔢 Adivina el Número</h2>
+        <p style="color:var(--muted); font-size:0.9rem;">El chat escribe un número para adivinar. Gana quien más se acerque.</p>
+      </div>
+
+      <div class="guess-card">
+        <p style="color:var(--muted); margin-bottom:8px; font-size:0.9rem;">Número secreto</p>
+        <div id="numberDisplay" class="secret-display">???</div>
+        <div class="range-hint" id="rangeHint" style="display:none;"></div>
+      </div>
+
+      <div class="card">
+        <h4 style="margin-bottom:14px;">Configurar ronda</h4>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <span style="color:var(--muted); font-size:0.9rem;">Rango:</span>
+            <input type="number" id="minNum" value="1" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:var(--text); padding:8px 10px; border-radius:8px; width:80px; text-align:center;">
+            <span style="color:var(--muted);">a</span>
+            <input type="number" id="maxNum" value="100" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:var(--text); padding:8px 10px; border-radius:8px; width:80px; text-align:center;">
+          </div>
+          <div class="number-input-row">
+            <span style="color:var(--muted); font-size:0.9rem;">Tu número:</span>
+            <input type="number" id="secretInput" placeholder="??">
+            <button class="btn btn-primary" onclick="setSecret()">Iniciar ronda</button>
+            <button class="btn btn-secondary" onclick="randomSecret()">Aleatorio</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-primary" onclick="revealNumber()">👁 Revelar número</button>
+        <button class="btn btn-secondary" onclick="newRound()">Nueva ronda</button>
+      </div>
+    </div>
+
+    <div class="game-sidebar">
+      <div class="card">
+        <h4 style="margin-bottom:12px;">🎯 Intentos (<span id="guessCount">0</span>)</h4>
+        <div class="guesses-list" id="guessesList">
+          <p style="color:var(--muted); font-size:0.85rem; text-align:center; padding:10px 0;">Nadie ha adivinado aún</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h4 style="margin-bottom:12px;">💬 Chat en vivo</h4>
+        <div class="chat-feed" id="chatFeed"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="../shared.js"></script>
+  <script>
+    let secretNumber = null;
+    let guesses = [];
+    let guessers = new Set();
+    let gameActive = false;
+
+    socket.on('chat-message', (data) => {
+      addChatMessage(data);
+      if (!gameActive || guessers.has(data.user)) return;
+      const num = parseInt(data.comment.trim());
+      if (isNaN(num)) return;
+      const min = parseInt(document.getElementById('minNum').value);
+      const max = parseInt(document.getElementById('maxNum').value);
+      if (num < min || num > max) return;
+
+      guessers.add(data.user);
+      const diff = secretNumber !== null ? Math.abs(num - secretNumber) : null;
+      guesses.push({ user: data.user, num, diff });
+      guesses.sort((a, b) => (a.diff ?? 999) - (b.diff ?? 999));
+      renderGuesses();
+    });
+
+    function setSecret() {
+      const val = parseInt(document.getElementById('secretInput').value);
+      const min = parseInt(document.getElementById('minNum').value);
+      const max = parseInt(document.getElementById('maxNum').value);
+      if (isNaN(val) || val < min || val > max) return showToast(`Ingresa un número entre ${min} y ${max}`, 'error');
+      secretNumber = val;
+      gameActive = true;
+      guesses = []; guessers.clear();
+      document.getElementById('numberDisplay').className = 'secret-display';
+      document.getElementById('numberDisplay').textContent = '???';
+      document.getElementById('rangeHint').style.display = 'flex';
+      document.getElementById('rangeHint').innerHTML = `
+        <span class="hint-chip hint-cold">Min: ${min}</span>
+        <span class="hint-chip hint-high">Max: ${max}</span>
+      `;
+      renderGuesses();
+      showToast('Ronda iniciada. El chat puede adivinar.', 'success');
+    }
+
+    function randomSecret() {
+      const min = parseInt(document.getElementById('minNum').value);
+      const max = parseInt(document.getElementById('maxNum').value);
+      const rand = Math.floor(Math.random() * (max - min + 1)) + min;
+      document.getElementById('secretInput').value = rand;
+      setSecret();
+    }
+
+    function revealNumber() {
+      if (secretNumber === null) return showToast('No hay número secreto', 'error');
+      gameActive = false;
+      document.getElementById('numberDisplay').className = 'number-display';
+      document.getElementById('numberDisplay').textContent = secretNumber;
+      renderGuesses(true);
+      if (guesses.length > 0) {
+        showToast(`🏆 Ganador: @${guesses[0].user} con ${guesses[0].num}`, 'success');
+      }
+    }
+
+    function newRound() {
+      secretNumber = null;
+      gameActive = false;
+      guesses = []; guessers.clear();
+      document.getElementById('numberDisplay').className = 'secret-display';
+      document.getElementById('numberDisplay').textContent = '???';
+      document.getElementById('secretInput').value = '';
+      document.getElementById('rangeHint').style.display = 'none';
+      renderGuesses();
+    }
+
+    function renderGuesses(revealed = false) {
+      const list = document.getElementById('guessesList');
+      document.getElementById('guessCount').textContent = guesses.length;
+      if (guesses.length === 0) {
+        list.innerHTML = '<p style="color:var(--muted); font-size:0.85rem; text-align:center; padding:10px 0;">Nadie ha adivinado aún</p>';
+        return;
+      }
+      list.innerHTML = guesses.map((g, i) => `
+        <div class="guess-row ${i === 0 && revealed ? 'winner-row' : ''}">
+          <span class="g-user">@${g.user}</span>
+          <span class="g-num">${g.num}</span>
+          <span class="g-diff">${revealed && g.diff !== null ? (g.diff === 0 ? '¡Exacto!' : `±${g.diff}`) : ''}</span>
+        </div>
+      `).join('');
+    }
+  </script>
+</body>
+</html>

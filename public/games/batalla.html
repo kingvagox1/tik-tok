@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Batalla de Equipos - StreamGames</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .battle-arena {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 20px;
+      align-items: center;
+    }
+    .team-card {
+      border-radius: 20px;
+      padding: 28px;
+      text-align: center;
+    }
+    .team-red { background: rgba(255,45,85,0.1); border: 2px solid rgba(255,45,85,0.4); }
+    .team-blue { background: rgba(59,130,246,0.1); border: 2px solid rgba(59,130,246,0.4); }
+    .team-name { font-size: 1.5rem; font-weight: 900; margin-bottom: 8px; }
+    .team-red .team-name { color: var(--pink); }
+    .team-blue .team-name { color: #3b82f6; }
+    .team-hp {
+      font-size: 3rem;
+      font-weight: 900;
+      line-height: 1;
+      margin: 12px 0;
+    }
+    .team-red .team-hp { color: var(--pink); }
+    .team-blue .team-hp { color: #3b82f6; }
+    .hp-bar {
+      height: 16px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 8px;
+      overflow: hidden;
+      margin: 8px 0;
+    }
+    .hp-fill {
+      height: 100%;
+      border-radius: 8px;
+      transition: width 0.5s ease;
+    }
+    .hp-fill-red { background: linear-gradient(90deg, #ff2d55, #ff6b6b); }
+    .hp-fill-blue { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+    .team-count { color: var(--muted); font-size: 0.85rem; }
+    .vs-badge {
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--muted);
+      text-align: center;
+    }
+    .attack-log {
+      height: 200px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 10px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 12px;
+    }
+    .attack-entry {
+      font-size: 0.82rem;
+      padding: 4px 8px;
+      border-radius: 6px;
+      animation: fadeIn 0.3s ease;
+    }
+    .attack-red { background: rgba(255,45,85,0.1); color: #ff6b6b; }
+    .attack-blue { background: rgba(59,130,246,0.1); color: #60a5fa; }
+    .winner-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 20px;
+      text-align: center;
+    }
+    .winner-overlay.show { display: flex; }
+    .winner-title { font-size: 4rem; font-weight: 900; }
+    .winner-red { color: var(--pink); }
+    .winner-blue { color: #3b82f6; }
+    .config-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .config-row label { color: var(--muted); font-size: 0.9rem; }
+    .config-row input {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: var(--text);
+      padding: 8px 10px;
+      border-radius: 8px;
+      width: 80px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body class="gradient-bg">
+
+  <nav class="navbar">
+    <div class="logo">🎮 StreamGames</div>
+    <div class="connect-bar">
+      <span class="status-dot" id="statusDot"></span>
+      <input type="text" id="usernameInput" placeholder="@usuario de TikTok">
+      <button class="btn btn-primary" id="connectBtn" onclick="connectTikTok()">Conectar</button>
+      <button class="btn btn-danger" id="disconnectBtn" onclick="disconnectTikTok()" style="display:none">Desconectar</button>
+    </div>
+  </nav>
+
+  <div class="game-layout">
+    <div class="game-main">
+      <a href="../index.html" class="back-btn">← Volver al menú</a>
+
+      <div class="card">
+        <h2 style="margin-bottom:8px;">⚔️ Batalla de Equipos</h2>
+        <p style="color:var(--muted); font-size:0.9rem;">
+          Únete con <strong style="color:var(--pink)">!rojo</strong> o <strong style="color:#3b82f6">!azul</strong> · Ataca con <strong style="color:#f59e0b">!atacar</strong>
+        </p>
+      </div>
+
+      <!-- Arena -->
+      <div class="battle-arena">
+        <div class="team-card team-red">
+          <div class="team-name">🔴 Equipo Rojo</div>
+          <div class="team-hp" id="hpRed">100</div>
+          <div class="hp-bar"><div class="hp-fill hp-fill-red" id="barRed" style="width:100%"></div></div>
+          <div class="team-count" id="countRed">0 jugadores</div>
+        </div>
+        <div class="vs-badge">⚔️<br>VS</div>
+        <div class="team-card team-blue">
+          <div class="team-name">🔵 Equipo Azul</div>
+          <div class="team-hp" id="hpBlue">100</div>
+          <div class="hp-bar"><div class="hp-fill hp-fill-blue" id="barBlue" style="width:100%"></div></div>
+          <div class="team-count" id="countBlue">0 jugadores</div>
+        </div>
+      </div>
+
+      <!-- Config -->
+      <div class="card">
+        <div class="config-row">
+          <label>HP inicial:</label>
+          <input type="number" id="maxHp" value="100" min="10" max="1000">
+          <label>Daño por ataque:</label>
+          <input type="number" id="dmgPerAtk" value="1" min="1" max="50">
+          <label>Cooldown (s):</label>
+          <input type="number" id="cooldown" value="3" min="0" max="30">
+          <button class="btn btn-primary" onclick="resetGame()">Reiniciar batalla</button>
+        </div>
+      </div>
+
+      <!-- Log -->
+      <div class="card">
+        <h4 style="margin-bottom:10px;">⚔️ Log de ataques</h4>
+        <div class="attack-log" id="attackLog">
+          <p style="color:var(--muted); font-size:0.82rem; text-align:center; padding:10px 0;">La batalla no ha comenzado</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="game-sidebar">
+      <div class="card">
+        <h4 style="margin-bottom:12px;">💬 Chat en vivo</h4>
+        <div class="chat-feed" id="chatFeed"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Winner overlay -->
+  <div class="winner-overlay" id="winnerOverlay">
+    <div style="font-size:4rem;">🏆</div>
+    <div class="winner-title" id="winnerTitle"></div>
+    <div style="color:var(--muted);">¡Ganó la batalla!</div>
+    <button class="btn btn-primary" onclick="resetGame()">Nueva batalla</button>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="../shared.js"></script>
+  <script>
+    let teams = { rojo: new Set(), azul: new Set() };
+    let hp = { rojo: 100, azul: 100 };
+    let maxHp = 100;
+    let cooldowns = {};
+    let gameOver = false;
+
+    socket.on('chat-message', (data) => {
+      addChatMessage(data);
+      if (gameOver) return;
+      const msg = data.comment.trim().toLowerCase();
+      const user = data.user;
+
+      if (msg === '!rojo' && !teams.azul.has(user)) {
+        teams.rojo.add(user);
+        updateCounts();
+      } else if (msg === '!azul' && !teams.rojo.has(user)) {
+        teams.azul.add(user);
+        updateCounts();
+      } else if (msg === '!atacar') {
+        handleAttack(user, data.nickname);
+      }
+    });
+
+    function handleAttack(user, nickname) {
+      const now = Date.now();
+      const cd = parseInt(document.getElementById('cooldown').value) * 1000;
+      if (cooldowns[user] && now - cooldowns[user] < cd) return;
+
+      let attackerTeam = null;
+      let targetTeam = null;
+      if (teams.rojo.has(user)) { attackerTeam = 'rojo'; targetTeam = 'azul'; }
+      else if (teams.azul.has(user)) { attackerTeam = 'azul'; targetTeam = 'rojo'; }
+      else return; // No está en ningún equipo
+
+      cooldowns[user] = now;
+      const dmg = parseInt(document.getElementById('dmgPerAtk').value) || 1;
+      hp[targetTeam] = Math.max(0, hp[targetTeam] - dmg);
+      updateHP();
+      logAttack(nickname || user, attackerTeam, dmg);
+
+      if (hp[targetTeam] <= 0) endGame(attackerTeam);
+    }
+
+    function updateHP() {
+      const max = maxHp;
+      ['rojo', 'azul'].forEach(team => {
+        const id = team === 'rojo' ? 'Red' : 'Blue';
+        document.getElementById('hp' + id).textContent = hp[team];
+        document.getElementById('bar' + id).style.width = (hp[team] / max * 100) + '%';
+      });
+    }
+
+    function updateCounts() {
+      document.getElementById('countRed').textContent = teams.rojo.size + ' jugadores';
+      document.getElementById('countBlue').textContent = teams.azul.size + ' jugadores';
+    }
+
+    function logAttack(user, team, dmg) {
+      const log = document.getElementById('attackLog');
+      const entry = document.createElement('div');
+      entry.className = `attack-entry attack-${team}`;
+      const target = team === 'rojo' ? 'Azul' : 'Rojo';
+      entry.textContent = `⚔️ @${user} atacó al equipo ${target} (-${dmg} HP)`;
+      log.appendChild(entry);
+      log.scrollTop = log.scrollHeight;
+      while (log.children.length > 80) log.removeChild(log.firstChild);
+    }
+
+    function endGame(winner) {
+      gameOver = true;
+      const overlay = document.getElementById('winnerOverlay');
+      const title = document.getElementById('winnerTitle');
+      overlay.classList.add('show');
+      if (winner === 'rojo') {
+        title.textContent = '🔴 Equipo Rojo';
+        title.className = 'winner-title winner-red';
+      } else {
+        title.textContent = '🔵 Equipo Azul';
+        title.className = 'winner-title winner-blue';
+      }
+    }
+
+    function resetGame() {
+      maxHp = parseInt(document.getElementById('maxHp').value) || 100;
+      hp = { rojo: maxHp, azul: maxHp };
+      teams = { rojo: new Set(), azul: new Set() };
+      cooldowns = {};
+      gameOver = false;
+      updateHP();
+      updateCounts();
+      document.getElementById('attackLog').innerHTML = '<p style="color:var(--muted); font-size:0.82rem; text-align:center; padding:10px 0;">La batalla no ha comenzado</p>';
+      document.getElementById('winnerOverlay').classList.remove('show');
+    }
+  </script>
+</body>
+</html>

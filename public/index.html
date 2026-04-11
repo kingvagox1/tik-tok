@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StreamGames – Juegos para TikTok Live</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .chat-panel { bottom: 24px; right: 24px; max-height: 480px; }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     NAVBAR
+══════════════════════════════════════════════ -->
+<nav class="navbar">
+  <span class="navbar-logo">🎮 StreamGames</span>
+  <div class="navbar-connect">
+    <span class="status-dot" id="statusDot" title="Desconectado"></span>
+    <input type="text" id="usernameInput" placeholder="@usuario TikTok" autocomplete="off" />
+    <button class="btn btn-primary btn-sm" id="connectBtn" onclick="connectTikTok()">Conectar</button>
+    <button class="btn btn-danger btn-sm" id="disconnectBtn" onclick="disconnectTikTok()" style="display:none">Desconectar</button>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════════════
+     HERO
+══════════════════════════════════════════════ -->
+<section class="hero">
+  <h1 class="hero-title">StreamGames</h1>
+  <p class="hero-subtitle">Juegos interactivos para tu TikTok Live. Conecta tu cuenta y empieza a jugar con tu chat en tiempo real.</p>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     GAMES GRID
+══════════════════════════════════════════════ -->
+<section class="games-section">
+  <p class="section-title">Elige un juego</p>
+  <div class="games-grid">
+
+    <a href="games/nunca.html" class="game-card">
+      <div class="game-card-emoji">🙈</div>
+      <div class="game-card-title">Yo Nunca…</div>
+      <div class="game-card-desc">El clásico juego de confesiones. El chat vota y todos participan.</div>
+      <span class="game-card-tag">Chat + Amigos</span>
+    </a>
+
+    <a href="games/ruleta.html" class="game-card">
+      <div class="game-card-emoji">🎰</div>
+      <div class="game-card-title">Ruleta del Chat</div>
+      <div class="game-card-desc">Gira la ruleta y elige un usuario aleatorio del chat como ganador.</div>
+      <span class="game-card-tag">Sorteos</span>
+    </a>
+
+    <a href="games/trivia.html" class="game-card">
+      <div class="game-card-emoji">🧠</div>
+      <div class="game-card-title">Trivia en Vivo</div>
+      <div class="game-card-desc">Preguntas de trivia en tiempo real. El chat responde con A, B, C o D.</div>
+      <span class="game-card-tag">Chat + Amigos</span>
+    </a>
+
+    <a href="games/verdad.html" class="game-card">
+      <div class="game-card-emoji">🎯</div>
+      <div class="game-card-title">Verdad o Reto</div>
+      <div class="game-card-desc">El chat elige verdad o reto para el streamer. ¿Te atreves?</div>
+      <span class="game-card-tag">Chat + Amigos</span>
+    </a>
+
+    <a href="games/adivina.html" class="game-card">
+      <div class="game-card-emoji">🔢</div>
+      <div class="game-card-title">Adivina el Número</div>
+      <div class="game-card-desc">El chat intenta adivinar el número secreto. Pistas de mayor/menor.</div>
+      <span class="game-card-tag">Chat</span>
+    </a>
+
+    <a href="games/batalla.html" class="game-card">
+      <div class="game-card-emoji">⚔️</div>
+      <div class="game-card-title">Batalla de Equipos</div>
+      <div class="game-card-desc">Divide el chat en equipos y compite en retos y preguntas.</div>
+      <span class="game-card-tag">Chat</span>
+    </a>
+
+    <a href="games/mimica.html" class="game-card">
+      <div class="game-card-emoji">🎭</div>
+      <div class="game-card-title">Mímica</div>
+      <div class="game-card-desc">El streamer actúa y el chat adivina la palabra. ¡Sin hablar!</div>
+      <span class="game-card-tag">Chat + Amigos</span>
+    </a>
+
+    <a href="games/mayormenor.html" class="game-card">
+      <div class="game-card-emoji">🃏</div>
+      <div class="game-card-title">Mayor o Menor</div>
+      <div class="game-card-desc">¿La siguiente carta será mayor o menor? El chat decide.</div>
+      <span class="game-card-tag">Chat</span>
+    </a>
+
+    <a href="games/carrera.html" class="game-card">
+      <div class="game-card-emoji">🏃</div>
+      <div class="game-card-title">Carrera de Emojis</div>
+      <div class="game-card-desc">Escribe el emoji correcto para avanzar. ¡El más rápido gana!</div>
+      <span class="game-card-tag">Chat</span>
+    </a>
+
+    <a href="games/karaoke.html" class="game-card">
+      <div class="game-card-emoji">🎤</div>
+      <div class="game-card-title">Karaoke Vote</div>
+      <div class="game-card-desc">El chat vota la canción que quiere escuchar. Ranking en vivo.</div>
+      <span class="game-card-tag">Chat + Amigos</span>
+    </a>
+
+
+
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     FLOATING CHAT PANEL
+══════════════════════════════════════════════ -->
+<div class="chat-panel" id="chatPanel">
+  <div class="chat-panel-header">
+    <span class="status-dot" id="panelStatusDot"></span>
+    <span class="panel-label">Chat en vivo</span>
+    <span class="panel-username" id="panelUsername"></span>
+    <span class="msg-counter" id="msgCounter">0 msgs</span>
+    <button class="panel-toggle-btn" id="ttsToggleBtn" onclick="toggleTTS()" title="Activar/desactivar TTS">🔇</button>
+    <button class="panel-toggle-btn" onclick="openTTSSettings()" title="Configuración TTS">⚙️</button>
+    <button class="panel-toggle-btn" onclick="clearLiveChat()" title="Limpiar chat">🗑</button>
+    <button class="panel-toggle-btn" onclick="toggleChatPanel()" title="Minimizar">−</button>
+  </div>
+
+  <!-- TTS Settings -->
+  <div class="tts-settings" id="ttsSettings">
+    <div class="tts-settings-title">🔊 Configuración TTS</div>
+    <div class="tts-row">
+      <label>Voz</label>
+      <select class="tts-select" id="ttsVoice"></select>
+    </div>
+    <div class="tts-row">
+      <label>Velocidad</label>
+      <input type="range" class="tts-range" id="ttsRate" min="0.5" max="2" step="0.1" value="1" />
+      <span id="ttsRateVal" style="font-size:0.75rem;color:var(--muted);min-width:28px">1.0</span>
+    </div>
+    <div class="tts-row">
+      <label>Volumen</label>
+      <input type="range" class="tts-range" id="ttsVol" min="0" max="1" step="0.05" value="1" />
+      <span id="ttsVolVal" style="font-size:0.75rem;color:var(--muted);min-width:28px">1.0</span>
+    </div>
+    <div class="tts-row">
+      <label>Leer usuario</label>
+      <input type="checkbox" class="tts-checkbox" id="ttsReadUser" checked />
+    </div>
+    <div class="tts-row">
+      <label>Filtrar</label>
+      <input type="text" class="tts-input" id="ttsFilter" placeholder="palabras,separadas,por,coma" />
+    </div>
+    <div class="tts-row">
+      <label>Máx. chars</label>
+      <input type="number" class="tts-input" id="ttsMaxchars" value="120" min="20" max="500" style="width:70px;flex:none" />
+    </div>
+    <button class="btn btn-secondary btn-sm w-full" onclick="testTTS()">🔊 Probar voz</button>
+  </div>
+
+  <!-- Chat body -->
+  <div class="chat-panel-body">
+    <div class="live-chat-feed" id="liveChatFeed"></div>
+  </div>
+
+  <!-- Stats bar -->
+  <div class="chat-panel-stats">
+    <div class="stat-item">
+      <span class="stat-value" id="statMsgs">0</span>
+      <span class="stat-label">Mensajes</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value" id="statLikes">0</span>
+      <span class="stat-label">Likes</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value" id="statFollows">0</span>
+      <span class="stat-label">Follows</span>
+    </div>
+  </div>
+</div>
+
+<!-- Floating open button (shown when panel is minimized) -->
+<button class="chat-open-btn hidden" id="chatOpenBtn" onclick="toggleChatPanel()">
+  💬
+  <span class="chat-badge" id="chatBadge" style="display:none">0</span>
+</button>
+
+<!-- ══════════════════════════════════════════════
+     SCRIPTS
+══════════════════════════════════════════════ -->
+<script src="/socket.io/socket.io.js"></script>
+<script src="shared.js"></script>
+<script>
+/* ============================================================
+   STATS & PANEL STATE
+   ============================================================ */
+let totalMsgs = 0, totalLikes = 0, totalFollows = 0, unreadMsgs = 0;
+let panelOpen = true;
+
+function updateStats() {
+  document.getElementById('statMsgs').textContent    = totalMsgs;
+  document.getElementById('statLikes').textContent   = totalLikes;
+  document.getElementById('statFollows').textContent = totalFollows;
+  document.getElementById('msgCounter').textContent  = totalMsgs + ' msgs';
+}
+
+/* ============================================================
+   CHAT PANEL
+   ============================================================ */
+function toggleChatPanel() {
+  panelOpen = !panelOpen;
+  const panel   = document.getElementById('chatPanel');
+  const openBtn = document.getElementById('chatOpenBtn');
+  const badge   = document.getElementById('chatBadge');
+
+  if (panelOpen) {
+    panel.classList.remove('hidden');
+    openBtn.classList.add('hidden');
+    unreadMsgs = 0;
+    badge.style.display = 'none';
+  } else {
+    panel.classList.add('hidden');
+    openBtn.classList.remove('hidden');
+  }
+}
+
+function clearLiveChat() {
+  const feed = document.getElementById('liveChatFeed');
+  if (feed) feed.innerHTML = '';
+}
+
+function addLiveChatMessage(data) {
+  const feed = document.getElementById('liveChatFeed');
+  if (!feed) return;
+
+  const user    = escapeHtml(data.user || data.nickname || 'anon');
+  const text    = escapeHtml(data.comment || '');
+  const initial = user.charAt(0).toUpperCase();
+
+  const msg = document.createElement('div');
+  msg.className = 'live-msg';
+  msg.innerHTML = `
+    <div class="live-msg-avatar">${initial}</div>
+    <div><span class="live-msg-user">${user}:</span><span class="live-msg-text"> ${text}</span></div>
+  `;
+  feed.appendChild(msg);
+  while (feed.children.length > 120) feed.removeChild(feed.firstChild);
+  feed.scrollTop = feed.scrollHeight;
+
+  if (!panelOpen) {
+    unreadMsgs++;
+    const badge = document.getElementById('chatBadge');
+    badge.textContent = unreadMsgs > 99 ? '99+' : unreadMsgs;
+    badge.style.display = 'flex';
+  }
+}
+
+function addFollowMessage(data) {
+  const feed = document.getElementById('liveChatFeed');
+  if (!feed) return;
+  const user = escapeHtml(data.user || data.nickname || 'anon');
+  const msg = document.createElement('div');
+  msg.className = 'live-msg';
+  msg.innerHTML = `<div class="live-msg-follow">❤️ <strong>${user}</strong> te siguió</div>`;
+  feed.appendChild(msg);
+  while (feed.children.length > 120) feed.removeChild(feed.firstChild);
+  feed.scrollTop = feed.scrollHeight;
+}
+
+/* ============================================================
+   TTS – Text-to-Speech
+   ============================================================ */
+let ttsEnabled  = false;
+let ttsVoices   = [];
+let ttsQueue    = [];
+let ttsSpeaking = false;
+
+function loadVoices() {
+  ttsVoices = window.speechSynthesis.getVoices();
+  const sel = document.getElementById('ttsVoice');
+  if (!sel) return;
+  sel.innerHTML = '';
+  ttsVoices.forEach((v, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = `${v.name} (${v.lang})`;
+    sel.appendChild(opt);
+  });
+  const esIdx = ttsVoices.findIndex(v => v.lang.startsWith('es'));
+  if (esIdx >= 0) sel.value = esIdx;
+}
+
+if (window.speechSynthesis) {
+  window.speechSynthesis.onvoiceschanged = loadVoices;
+  loadVoices();
+}
+
+document.getElementById('ttsRate').addEventListener('input', function() {
+  document.getElementById('ttsRateVal').textContent = parseFloat(this.value).toFixed(1);
+});
+document.getElementById('ttsVol').addEventListener('input', function() {
+  document.getElementById('ttsVolVal').textContent = parseFloat(this.value).toFixed(2);
+});
+
+function toggleTTS() {
+  ttsEnabled = !ttsEnabled;
+  const btn = document.getElementById('ttsToggleBtn');
+  btn.textContent = ttsEnabled ? '🔊' : '🔇';
+  btn.title = ttsEnabled ? 'Desactivar TTS' : 'Activar TTS';
+  showToast(ttsEnabled ? '🔊 TTS activado' : '🔇 TTS desactivado', 'info');
+  if (!ttsEnabled) {
+    window.speechSynthesis.cancel();
+    ttsQueue = [];
+    ttsSpeaking = false;
+  }
+}
+
+function openTTSSettings() {
+  document.getElementById('ttsSettings').classList.toggle('open');
+}
+
+function speakMessage(user, text) {
+  if (!ttsEnabled || !window.speechSynthesis) return;
+
+  const filter = document.getElementById('ttsFilter').value;
+  if (filter) {
+    const words = filter.split(',').map(w => w.trim().toLowerCase()).filter(Boolean);
+    if (words.some(w => text.toLowerCase().includes(w))) return;
+  }
+
+  const maxChars = parseInt(document.getElementById('ttsMaxchars').value) || 120;
+  let msg = text.length > maxChars ? text.slice(0, maxChars) + '…' : text;
+
+  if (document.getElementById('ttsReadUser').checked) msg = `${user} dice: ${msg}`;
+
+  ttsQueue.push(msg);
+  processQueue();
+}
+
+function processQueue() {
+  if (ttsSpeaking || ttsQueue.length === 0 || !ttsEnabled) return;
+  ttsSpeaking = true;
+
+  const msg   = ttsQueue.shift();
+  const utter = new SpeechSynthesisUtterance(msg);
+  const voiceIdx = parseInt(document.getElementById('ttsVoice').value);
+  if (ttsVoices[voiceIdx]) utter.voice = ttsVoices[voiceIdx];
+  utter.rate   = parseFloat(document.getElementById('ttsRate').value);
+  utter.volume = parseFloat(document.getElementById('ttsVol').value);
+  utter.onend = utter.onerror = () => { ttsSpeaking = false; processQueue(); };
+  window.speechSynthesis.speak(utter);
+}
+
+function testTTS() {
+  const saved = ttsEnabled;
+  ttsEnabled = true;
+  speakMessage('StreamGames', 'Hola, esta es una prueba de voz. ¡Bienvenido al stream!');
+  ttsEnabled = saved;
+}
+
+/* ============================================================
+   SOCKET EVENTS
+   ============================================================ */
+socket.on('chat-message', (data) => {
+  totalMsgs++;
+  updateStats();
+  addLiveChatMessage(data);
+  speakMessage(data.user || 'anon', data.comment || '');
+});
+
+socket.on('like', (data) => {
+  totalLikes += (data.likeCount || 1);
+  updateStats();
+});
+
+socket.on('follow', (data) => {
+  totalFollows++;
+  updateStats();
+  addFollowMessage(data);
+});
+
+socket.on('tiktok-status', (data) => {
+  // Sincronizar ambos status dots
+  document.querySelectorAll('.status-dot').forEach(d => {
+    d.classList.toggle('connected', data.connected);
+  });
+  const panelUser = document.getElementById('panelUsername');
+  if (panelUser) panelUser.textContent = data.connected ? `@${data.username}` : '';
+});
+</script>
+
+</body>
+</html>

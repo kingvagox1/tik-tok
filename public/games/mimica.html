@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mímica - StreamGames</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .mimica-word {
+      font-size: 4rem;
+      font-weight: 900;
+      text-align: center;
+      background: linear-gradient(90deg, var(--pink), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      padding: 40px;
+      border-radius: 20px;
+      background-color: rgba(255,255,255,0.03);
+      border: 2px dashed rgba(255,255,255,0.1);
+      min-height: 160px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .mimica-hidden {
+      font-size: 4rem;
+      font-weight: 900;
+      text-align: center;
+      color: rgba(255,255,255,0.08);
+      padding: 40px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.03);
+      border: 2px dashed rgba(255,255,255,0.1);
+      min-height: 160px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .mimica-hidden:hover { border-color: var(--pink); }
+    .category-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .cat-chip {
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.05);
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+    .cat-chip.active { border-color: var(--pink); background: rgba(255,45,85,0.15); color: var(--pink); }
+    .guesser-row {
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(255,255,255,0.04); border-radius: 10px; padding: 10px 14px;
+      animation: fadeIn 0.3s ease;
+    }
+    .guesser-row .g-user { color: var(--pink); font-weight: 600; }
+    .guesser-row .g-guess { color: var(--text); font-size: 0.9rem; }
+    .correct-banner {
+      background: rgba(34,197,94,0.15);
+      border: 2px solid #22c55e;
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      display: none;
+    }
+    .correct-banner.show { display: block; animation: fadeIn 0.4s ease; }
+    .timer-bar {
+      height: 8px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .timer-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #22c55e, var(--pink));
+      border-radius: 4px;
+      transition: width 1s linear;
+    }
+  </style>
+</head>
+<body class="gradient-bg">
+  <nav class="navbar">
+    <div class="logo">🎮 StreamGames</div>
+    <div class="connect-bar">
+      <span class="status-dot" id="statusDot"></span>
+      <input type="text" id="usernameInput" placeholder="@usuario de TikTok">
+      <button class="btn btn-primary" id="connectBtn" onclick="connectTikTok()">Conectar</button>
+      <button class="btn btn-danger" id="disconnectBtn" onclick="disconnectTikTok()" style="display:none">Desconectar</button>
+    </div>
+  </nav>
+
+  <div class="game-layout">
+    <div class="game-main">
+      <a href="../index.html" class="back-btn">← Volver al menú</a>
+      <div class="card">
+        <h2 style="margin-bottom:8px;">🎭 Mímica</h2>
+        <p style="color:var(--muted); font-size:0.9rem;">Actúa la palabra sin hablar. El chat escribe su respuesta para adivinar.</p>
+      </div>
+
+      <!-- Palabra oculta / visible -->
+      <div id="wordHidden" class="mimica-hidden" onclick="revealWord()">
+        👆 Toca para ver tu palabra
+      </div>
+      <div id="wordVisible" class="mimica-word" style="display:none;">???</div>
+
+      <!-- Timer -->
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <span style="color:var(--muted); font-size:0.9rem;">Tiempo restante</span>
+          <span id="timerLabel" style="font-weight:700; font-size:1.1rem;">60s</span>
+        </div>
+        <div class="timer-bar"><div class="timer-fill" id="timerFill" style="width:100%"></div></div>
+      </div>
+
+      <!-- Ganador -->
+      <div class="correct-banner" id="correctBanner">
+        <div style="font-size:2rem;">🎉</div>
+        <div style="font-size:1.4rem; font-weight:700; color:#22c55e;" id="correctUser"></div>
+        <div style="color:var(--muted); margin-top:4px;">¡Adivinó la palabra!</div>
+      </div>
+
+      <!-- Categorías -->
+      <div class="card">
+        <h4 style="margin-bottom:12px;">Categoría</h4>
+        <div class="category-chips" id="catChips"></div>
+      </div>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="nextWord()">▶ Nueva palabra</button>
+        <button class="btn btn-secondary" onclick="startTimer()">⏱ Reiniciar timer</button>
+      </div>
+    </div>
+
+    <div class="game-sidebar">
+      <div class="card">
+        <h4 style="margin-bottom:12px;">💬 Intentos del chat</h4>
+        <div class="chat-feed" id="guessFeed" style="height:250px;"></div>
+      </div>
+      <div class="card">
+        <h4 style="margin-bottom:12px;">💬 Chat en vivo</h4>
+        <div class="chat-feed" id="chatFeed"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="../shared.js"></script>
+  <script>
+    const WORDS = {
+      '🐾 Animales': ['Elefante','Pingüino','Cocodrilo','Mariposa','Pulpo','Canguro','Flamenco','Tortuga','Murciélago','Delfín'],
+      '🎬 Películas': ['Titanic','Matrix','Avatar','Frozen','Coco','Shrek','Toy Story','Batman','Spiderman','Moana'],
+      '🍕 Comida': ['Pizza','Sushi','Hamburguesa','Tacos','Helado','Espagueti','Sándwich','Churros','Paella','Ramen'],
+      '⚽ Deportes': ['Fútbol','Natación','Boxeo','Tenis','Skateboard','Surf','Gimnasia','Ciclismo','Golf','Karate'],
+      '🎭 Acciones': ['Bailar','Dormir','Cocinar','Conducir','Nadar','Volar','Llorar','Reír','Correr','Cantar'],
+    };
+    let categories = Object.keys(WORDS);
+    let activeCategories = new Set(categories);
+    let currentWord = '';
+    let wordRevealed = false;
+    let timer = null;
+    let timeLeft = 60;
+    const TOTAL_TIME = 60;
+
+    // Render category chips
+    const chips = document.getElementById('catChips');
+    categories.forEach(cat => {
+      const chip = document.createElement('div');
+      chip.className = 'cat-chip active';
+      chip.textContent = cat;
+      chip.onclick = () => {
+        if (activeCategories.has(cat)) { activeCategories.delete(cat); chip.classList.remove('active'); }
+        else { activeCategories.add(cat); chip.classList.add('active'); }
+      };
+      chips.appendChild(chip);
+    });
+
+    function getRandomWord() {
+      const active = categories.filter(c => activeCategories.has(c));
+      if (!active.length) return 'Activa al menos una categoría';
+      const cat = active[Math.floor(Math.random() * active.length)];
+      const words = WORDS[cat];
+      return words[Math.floor(Math.random() * words.length)];
+    }
+
+    function nextWord() {
+      currentWord = getRandomWord();
+      wordRevealed = false;
+      document.getElementById('wordHidden').style.display = 'flex';
+      document.getElementById('wordVisible').style.display = 'none';
+      document.getElementById('correctBanner').classList.remove('show');
+      document.getElementById('guessFeed').innerHTML = '';
+      startTimer();
+    }
+
+    function revealWord() {
+      if (!currentWord) return;
+      wordRevealed = true;
+      document.getElementById('wordHidden').style.display = 'none';
+      document.getElementById('wordVisible').style.display = 'flex';
+      document.getElementById('wordVisible').textContent = currentWord;
+    }
+
+    function startTimer() {
+      if (timer) clearInterval(timer);
+      timeLeft = TOTAL_TIME;
+      updateTimerUI();
+      timer = setInterval(() => {
+        timeLeft--;
+        updateTimerUI();
+        if (timeLeft <= 0) { clearInterval(timer); timer = null; }
+      }, 1000);
+    }
+
+    function updateTimerUI() {
+      document.getElementById('timerLabel').textContent = timeLeft + 's';
+      document.getElementById('timerFill').style.width = (timeLeft / TOTAL_TIME * 100) + '%';
+    }
+
+    socket.on('chat-message', (data) => {
+      addChatMessage(data);
+      if (!currentWord || !wordRevealed) return;
+      const guess = data.comment.trim();
+
+      // Mostrar intento en feed de intentos
+      const feed = document.getElementById('guessFeed');
+      const el = document.createElement('div');
+      el.className = 'guesser-row';
+      el.innerHTML = `<span class="g-user">@${data.user}</span><span class="g-guess">${escapeHtml(guess)}</span>`;
+      feed.appendChild(el);
+      feed.scrollTop = feed.scrollHeight;
+
+      // Verificar si adivinó
+      if (guess.toLowerCase().trim() === currentWord.toLowerCase()) {
+        if (timer) { clearInterval(timer); timer = null; }
+        document.getElementById('correctUser').textContent = '@' + data.user + ' adivinó: ' + currentWord;
+        document.getElementById('correctBanner').classList.add('show');
+        showToast('🎉 @' + data.user + ' adivinó!', 'success');
+      }
+    });
+
+    nextWord();
+  </script>
+</body>
+</html>

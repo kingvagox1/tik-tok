@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carrera de Emojis - StreamGames</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .track {
+      background: rgba(0,0,0,0.3);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .lane {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .lane-label {
+      width: 80px;
+      font-size: 1.4rem;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .lane-track {
+      flex: 1;
+      height: 48px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 24px;
+      border: 1px solid rgba(255,255,255,0.08);
+      position: relative;
+      overflow: hidden;
+    }
+    .lane-runner {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.8rem;
+      transition: left 0.3s ease;
+      left: 0%;
+    }
+    .finish-line {
+      position: absolute;
+      right: 8px;
+      top: 0; bottom: 0;
+      width: 3px;
+      background: repeating-linear-gradient(
+        to bottom,
+        white 0px, white 6px,
+        black 6px, black 12px
+      );
+      opacity: 0.3;
+    }
+    .lane-count {
+      width: 60px;
+      text-align: right;
+      font-size: 0.85rem;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+    .winner-banner {
+      background: linear-gradient(135deg, rgba(255,45,85,0.2), rgba(124,58,237,0.2));
+      border: 2px solid var(--pink);
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+      display: none;
+    }
+    .winner-banner.show { display: block; animation: fadeIn 0.5s ease; }
+    .winner-emoji { font-size: 4rem; }
+    .winner-text { font-size: 1.5rem; font-weight: 900; margin-top: 8px; }
+    .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .config-item { display: flex; flex-direction: column; gap: 4px; }
+    .config-item label { color: var(--muted); font-size: 0.8rem; }
+    .config-item input {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: var(--text);
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 1.2rem;
+      text-align: center;
+    }
+    .spam-feed {
+      height: 120px;
+      overflow: hidden;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      align-content: flex-start;
+      padding: 8px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 10px;
+    }
+    .spam-emoji { font-size: 1.4rem; animation: popIn 0.2s ease; }
+    @keyframes popIn {
+      from { transform: scale(0); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+  </style>
+</head>
+<body class="gradient-bg">
+  <nav class="navbar">
+    <div class="logo">🎮 StreamGames</div>
+    <div class="connect-bar">
+      <span class="status-dot" id="statusDot"></span>
+      <input type="text" id="usernameInput" placeholder="@usuario de TikTok">
+      <button class="btn btn-primary" id="connectBtn" onclick="connectTikTok()">Conectar</button>
+      <button class="btn btn-danger" id="disconnectBtn" onclick="disconnectTikTok()" style="display:none">Desconectar</button>
+    </div>
+  </nav>
+
+  <div class="game-layout">
+    <div class="game-main">
+      <a href="../index.html" class="back-btn">← Volver al menú</a>
+      <div class="card">
+        <h2 style="margin-bottom:8px;">🏃 Carrera de Emojis</h2>
+        <p style="color:var(--muted); font-size:0.9rem;">El chat spamea el emoji de su corredor para hacerlo avanzar. ¡El primero en llegar gana!</p>
+      </div>
+
+      <!-- Configurar corredores -->
+      <div class="card">
+        <h4 style="margin-bottom:12px;">Corredores (emoji = comando del chat)</h4>
+        <div class="config-grid" id="runnersConfig"></div>
+        <button class="btn btn-secondary" style="margin-top:12px;" onclick="addRunner()">+ Agregar corredor</button>
+      </div>
+
+      <!-- Pista -->
+      <div class="card">
+        <h4 style="margin-bottom:12px; display:flex; justify-content:space-between;">
+          <span>🏁 Pista</span>
+          <span id="raceStatus" style="color:var(--muted); font-size:0.85rem;">Esperando inicio</span>
+        </h4>
+        <div class="track" id="track"></div>
+      </div>
+
+      <!-- Spam feed -->
+      <div class="card">
+        <h4 style="margin-bottom:8px;">💬 Spam en vivo</h4>
+        <div class="spam-feed" id="spamFeed"></div>
+      </div>
+
+      <!-- Ganador -->
+      <div class="winner-banner" id="winnerBanner">
+        <div class="winner-emoji" id="winnerEmoji"></div>
+        <div class="winner-text" id="winnerText"></div>
+        <div style="color:var(--muted); margin-top:4px;">¡Ganó la carrera!</div>
+      </div>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn btn-primary" id="startBtn" onclick="startRace()">🏁 Iniciar carrera</button>
+        <button class="btn btn-secondary" onclick="resetRace()">🔄 Reiniciar</button>
+      </div>
+    </div>
+
+    <div class="game-sidebar">
+      <div class="card">
+        <h4 style="margin-bottom:12px;">📊 Conteo de spam</h4>
+        <div id="spamCount" style="display:flex; flex-direction:column; gap:8px;"></div>
+      </div>
+      <div class="card">
+        <h4 style="margin-bottom:12px;">💬 Chat en vivo</h4>
+        <div class="chat-feed" id="chatFeed"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="../shared.js"></script>
+  <script>
+    let runners = [
+      { emoji: '🐢', name: 'Tortuga', progress: 0 },
+      { emoji: '🐇', name: 'Conejo', progress: 0 },
+      { emoji: '🦊', name: 'Zorro', progress: 0 },
+      { emoji: '🐸', name: 'Rana', progress: 0 },
+    ];
+    let spamCounts = {};
+    let raceActive = false;
+    const FINISH = 100;
+
+    function renderConfig() {
+      const grid = document.getElementById('runnersConfig');
+      grid.innerHTML = runners.map((r, i) => `
+        <div class="config-item">
+          <label>Corredor ${i+1}</label>
+          <input type="text" value="${r.emoji}" maxlength="2"
+            oninput="runners[${i}].emoji = this.value; renderTrack();"
+            style="font-size:1.5rem;">
+        </div>
+      `).join('');
+    }
+
+    function addRunner() {
+      if (runners.length >= 6) return showToast('Máximo 6 corredores', 'error');
+      const emojis = ['🦁','🐯','🦄','🐼'];
+      runners.push({ emoji: emojis[runners.length % emojis.length], name: 'Corredor', progress: 0 });
+      renderConfig();
+      renderTrack();
+    }
+
+    function renderTrack() {
+      const track = document.getElementById('track');
+      track.innerHTML = runners.map((r, i) => `
+        <div class="lane">
+          <div class="lane-label">${r.emoji}</div>
+          <div class="lane-track">
+            <div class="lane-runner" id="runner${i}" style="left:${Math.min(r.progress, 90)}%">${r.emoji}</div>
+            <div class="finish-line"></div>
+          </div>
+          <div class="lane-count" id="count${i}">${spamCounts[r.emoji] || 0}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderSpamCount() {
+      const el = document.getElementById('spamCount');
+      el.innerHTML = runners.map(r => `
+        <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.9rem;">
+          <span>${r.emoji}</span>
+          <div style="flex:1; margin:0 10px; height:6px; background:rgba(255,255,255,0.08); border-radius:3px; overflow:hidden;">
+            <div style="height:100%; background:var(--pink); border-radius:3px; width:${Math.min((spamCounts[r.emoji]||0) / Math.max(...runners.map(r2 => spamCounts[r2.emoji]||0), 1) * 100, 100)}%; transition:width 0.3s;"></div>
+          </div>
+          <span style="color:var(--pink); font-weight:700;">${spamCounts[r.emoji] || 0}</span>
+        </div>
+      `).join('');
+    }
+
+    function startRace() {
+      raceActive = true;
+      spamCounts = {};
+      runners.forEach(r => { r.progress = 0; spamCounts[r.emoji] = 0; });
+      document.getElementById('winnerBanner').classList.remove('show');
+      document.getElementById('raceStatus').textContent = '🏃 ¡Corriendo!';
+      document.getElementById('startBtn').disabled = true;
+      renderTrack();
+    }
+
+    function resetRace() {
+      raceActive = false;
+      spamCounts = {};
+      runners.forEach(r => { r.progress = 0; });
+      document.getElementById('winnerBanner').classList.remove('show');
+      document.getElementById('raceStatus').textContent = 'Esperando inicio';
+      document.getElementById('startBtn').disabled = false;
+      document.getElementById('spamFeed').innerHTML = '';
+      renderTrack();
+      renderSpamCount();
+    }
+
+    socket.on('chat-message', (data) => {
+      addChatMessage(data);
+      if (!raceActive) return;
+
+      const msg = data.comment.trim();
+      runners.forEach((r, i) => {
+        if (msg.includes(r.emoji)) {
+          const count = (msg.match(new RegExp(r.emoji, 'g')) || []).length;
+          spamCounts[r.emoji] = (spamCounts[r.emoji] || 0) + Math.min(count, 5);
+          r.progress = Math.min((spamCounts[r.emoji] / 3), FINISH);
+
+          // Update runner position
+          const runnerEl = document.getElementById('runner' + i);
+          const countEl = document.getElementById('count' + i);
+          if (runnerEl) runnerEl.style.left = Math.min(r.progress * 0.9, 90) + '%';
+          if (countEl) countEl.textContent = spamCounts[r.emoji];
+
+          // Spam feed
+          const feed = document.getElementById('spamFeed');
+          const el = document.createElement('span');
+          el.className = 'spam-emoji';
+          el.textContent = r.emoji;
+          feed.appendChild(el);
+          while (feed.children.length > 50) feed.removeChild(feed.firstChild);
+
+          renderSpamCount();
+
+          if (r.progress >= FINISH) {
+            raceActive = false;
+            document.getElementById('raceStatus').textContent = '🏆 ¡Terminó!';
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('winnerEmoji').textContent = r.emoji;
+            document.getElementById('winnerText').textContent = r.emoji + ' ganó con ' + spamCounts[r.emoji] + ' spams';
+            document.getElementById('winnerBanner').classList.add('show');
+            showToast(r.emoji + ' ganó la carrera!', 'success');
+          }
+        }
+      });
+    });
+
+    renderConfig();
+    renderTrack();
+    renderSpamCount();
+  </script>
+</body>
+</html>

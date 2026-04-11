@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Karaoke Vote - StreamGames</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .song-card {
+      border-radius: 16px;
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 2px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+    }
+    .song-card:hover { border-color: var(--pink); background: rgba(255,45,85,0.08); }
+    .song-card.winner {
+      border-color: #22c55e;
+      background: rgba(34,197,94,0.1);
+      animation: pulse 1s ease infinite alternate;
+    }
+    @keyframes pulse {
+      from { box-shadow: 0 0 0 rgba(34,197,94,0); }
+      to { box-shadow: 0 0 20px rgba(34,197,94,0.3); }
+    }
+    .song-num {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      background: rgba(255,45,85,0.15);
+      border: 1px solid rgba(255,45,85,0.3);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900; color: var(--pink); flex-shrink: 0;
+    }
+    .song-info { flex: 1; }
+    .song-title { font-weight: 700; font-size: 1rem; }
+    .song-artist { color: var(--muted); font-size: 0.85rem; margin-top: 2px; }
+    .song-votes { font-size: 1.5rem; font-weight: 900; color: var(--pink); flex-shrink: 0; }
+    .vote-bar-song {
+      height: 4px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 2px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+    .vote-fill-song {
+      height: 100%;
+      background: linear-gradient(90deg, var(--pink), var(--purple));
+      border-radius: 2px;
+      transition: width 0.4s;
+    }
+    .add-song-form {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .add-song-form input {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: var(--text);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      flex: 1;
+      min-width: 120px;
+    }
+    .current-song {
+      background: linear-gradient(135deg, rgba(255,45,85,0.15), rgba(124,58,237,0.15));
+      border: 2px solid rgba(255,45,85,0.4);
+      border-radius: 20px;
+      padding: 28px;
+      text-align: center;
+    }
+    .current-song-title { font-size: 2rem; font-weight: 900; margin: 8px 0; }
+    .current-song-artist { color: var(--muted); font-size: 1rem; }
+    .phase-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .phase-voting { background: rgba(245,158,11,0.2); color: #f59e0b; border: 1px solid rgba(245,158,11,0.4); }
+    .phase-singing { background: rgba(34,197,94,0.2); color: #22c55e; border: 1px solid rgba(34,197,94,0.4); }
+    .phase-idle { background: rgba(255,255,255,0.08); color: var(--muted); border: 1px solid rgba(255,255,255,0.1); }
+  </style>
+</head>
+<body class="gradient-bg">
+  <nav class="navbar">
+    <div class="logo">🎮 StreamGames</div>
+    <div class="connect-bar">
+      <span class="status-dot" id="statusDot"></span>
+      <input type="text" id="usernameInput" placeholder="@usuario de TikTok">
+      <button class="btn btn-primary" id="connectBtn" onclick="connectTikTok()">Conectar</button>
+      <button class="btn btn-danger" id="disconnectBtn" onclick="disconnectTikTok()" style="display:none">Desconectar</button>
+    </div>
+  </nav>
+
+  <div class="game-layout">
+    <div class="game-main">
+      <a href="../index.html" class="back-btn">← Volver al menú</a>
+      <div class="card">
+        <h2 style="margin-bottom:8px;">🎤 Karaoke Vote</h2>
+        <p style="color:var(--muted); font-size:0.9rem;">El chat vota con <strong style="color:var(--pink)">!1 !2 !3...</strong> para elegir la canción que debes cantar</p>
+      </div>
+
+      <!-- Canción actual -->
+      <div class="current-song" id="currentSong">
+        <div class="phase-badge phase-idle" id="phaseBadge">Sin canción</div>
+        <div style="font-size:3rem;">🎤</div>
+        <div class="current-song-title" id="currentTitle">Inicia una votación</div>
+        <div class="current-song-artist" id="currentArtist">Agrega canciones y abre la votación</div>
+      </div>
+
+      <!-- Lista de canciones -->
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+          <h4>🎵 Canciones (<span id="songCount">0</span>)</h4>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-primary" id="voteBtn" onclick="openVoting()">🗳️ Abrir votación</button>
+            <button class="btn btn-secondary" onclick="pickWinner()">🏆 Elegir ganadora</button>
+          </div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:10px;" id="songList">
+          <p style="color:var(--muted); font-size:0.85rem; text-align:center; padding:20px 0;">Agrega canciones abajo</p>
+        </div>
+      </div>
+
+      <!-- Agregar canción -->
+      <div class="card">
+        <h4 style="margin-bottom:12px;">Agregar canción</h4>
+        <div class="add-song-form">
+          <input type="text" id="songTitle" placeholder="Título de la canción">
+          <input type="text" id="songArtist" placeholder="Artista">
+          <button class="btn btn-primary" onclick="addSong()">Agregar</button>
+        </div>
+        <div style="margin-top:12px;">
+          <button class="btn btn-secondary" style="font-size:0.8rem;" onclick="loadDefaults()">Cargar canciones de ejemplo</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="game-sidebar">
+      <div class="card">
+        <h4 style="margin-bottom:12px;">📊 Votos en tiempo real</h4>
+        <div id="liveVotes" style="display:flex; flex-direction:column; gap:8px;">
+          <p style="color:var(--muted); font-size:0.85rem; text-align:center; padding:10px 0;">Abre la votación para ver los votos</p>
+        </div>
+      </div>
+      <div class="card">
+        <h4 style="margin-bottom:12px;">💬 Chat en vivo</h4>
+        <div class="chat-feed" id="chatFeed"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="../shared.js"></script>
+  <script>
+    let songs = [];
+    let votes = {};
+    let voters = new Set();
+    let phase = 'idle'; // idle | voting | singing
+
+    function loadDefaults() {
+      songs = [
+        { title: 'Flowers', artist: 'Miley Cyrus' },
+        { title: 'Shakira: Bzrp Music Sessions #53', artist: 'Bizarrap & Shakira' },
+        { title: 'Unholy', artist: 'Sam Smith' },
+        { title: 'As It Was', artist: 'Harry Styles' },
+        { title: 'Quevedo: Bzrp Music Sessions #52', artist: 'Bizarrap & Quevedo' },
+        { title: 'Tití Me Preguntó', artist: 'Bad Bunny' },
+      ];
+      renderSongs();
+      showToast('Canciones cargadas', 'success');
+    }
+
+    function addSong() {
+      const title = document.getElementById('songTitle').value.trim();
+      const artist = document.getElementById('songArtist').value.trim();
+      if (!title) return showToast('Escribe el título', 'error');
+      songs.push({ title, artist: artist || 'Desconocido' });
+      document.getElementById('songTitle').value = '';
+      document.getElementById('songArtist').value = '';
+      renderSongs();
+    }
+
+    function removeSong(i) {
+      songs.splice(i, 1);
+      renderSongs();
+    }
+
+    function renderSongs() {
+      const list = document.getElementById('songList');
+      document.getElementById('songCount').textContent = songs.length;
+      if (songs.length === 0) {
+        list.innerHTML = '<p style="color:var(--muted); font-size:0.85rem; text-align:center; padding:20px 0;">Agrega canciones abajo</p>';
+        return;
+      }
+      const maxVotes = Math.max(...songs.map((_, i) => votes[i] || 0), 1);
+      list.innerHTML = songs.map((s, i) => `
+        <div class="song-card" id="songCard${i}">
+          <div class="song-num">!${i+1}</div>
+          <div class="song-info">
+            <div class="song-title">${escapeHtml(s.title)}</div>
+            <div class="song-artist">${escapeHtml(s.artist)}</div>
+            <div class="vote-bar-song">
+              <div class="vote-fill-song" style="width:${((votes[i]||0)/maxVotes*100)}%"></div>
+            </div>
+          </div>
+          <div class="song-votes">${votes[i] || 0}</div>
+          ${phase === 'idle' ? `<button onclick="removeSong(${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;">✕</button>` : ''}
+        </div>
+      `).join('');
+    }
+
+    function openVoting() {
+      if (songs.length < 2) return showToast('Agrega al menos 2 canciones', 'error');
+      phase = 'voting';
+      votes = {};
+      voters.clear();
+      songs.forEach((_, i) => votes[i] = 0);
+      document.getElementById('phaseBadge').className = 'phase-badge phase-voting';
+      document.getElementById('phaseBadge').textContent = '🗳️ Votación abierta';
+      document.getElementById('currentTitle').textContent = '¿Qué canción canto?';
+      document.getElementById('currentArtist').textContent = 'El chat está votando...';
+      document.getElementById('voteBtn').textContent = '🔒 Cerrar votación';
+      document.getElementById('voteBtn').onclick = closeVoting;
+      renderSongs();
+      renderLiveVotes();
+      showToast('¡Votación abierta!', 'success');
+    }
+
+    function closeVoting() {
+      phase = 'idle';
+      document.getElementById('voteBtn').textContent = '🗳️ Abrir votación';
+      document.getElementById('voteBtn').onclick = openVoting;
+      document.getElementById('phaseBadge').className = 'phase-badge phase-idle';
+      document.getElementById('phaseBadge').textContent = 'Votación cerrada';
+      renderSongs();
+    }
+
+    function pickWinner() {
+      if (songs.length === 0) return showToast('No hay canciones', 'error');
+      closeVoting();
+      const maxVotes = Math.max(...Object.values(votes));
+      const winners = songs.map((s, i) => ({ ...s, i, v: votes[i] || 0 })).filter(s => s.v === maxVotes);
+      const winner = winners[Math.floor(Math.random() * winners.length)];
+      phase = 'singing';
+      document.getElementById('phaseBadge').className = 'phase-badge phase-singing';
+      document.getElementById('phaseBadge').textContent = '🎤 ¡Cantando!';
+      document.getElementById('currentTitle').textContent = winner.title;
+      document.getElementById('currentArtist').textContent = winner.artist;
+      // Highlight winner
+      document.querySelectorAll('.song-card').forEach(c => c.classList.remove('winner'));
+      const winCard = document.getElementById('songCard' + winner.i);
+      if (winCard) winCard.classList.add('winner');
+      showToast('🎤 Canción elegida: ' + winner.title, 'success');
+    }
+
+    function renderLiveVotes() {
+      const el = document.getElementById('liveVotes');
+      if (phase !== 'voting') {
+        el.innerHTML = '<p style="color:var(--muted); font-size:0.85rem; text-align:center; padding:10px 0;">Abre la votación para ver los votos</p>';
+        return;
+      }
+      const total = Object.values(votes).reduce((a,b) => a+b, 0) || 1;
+      el.innerHTML = songs.map((s, i) => `
+        <div style="font-size:0.85rem;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+            <span><strong style="color:var(--pink)">!${i+1}</strong> ${escapeHtml(s.title)}</span>
+            <span style="color:var(--pink); font-weight:700;">${votes[i]||0}</span>
+          </div>
+          <div style="height:5px; background:rgba(255,255,255,0.06); border-radius:3px; overflow:hidden;">
+            <div style="height:100%; background:var(--pink); border-radius:3px; width:${(votes[i]||0)/total*100}%; transition:width 0.3s;"></div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    socket.on('chat-message', (data) => {
+      addChatMessage(data);
+      if (phase !== 'voting' || voters.has(data.user)) return;
+      const msg = data.comment.trim();
+      const match = msg.match(/^!(\d+)$/);
+      if (match) {
+        const idx = parseInt(match[1]) - 1;
+        if (idx >= 0 && idx < songs.length) {
+          voters.add(data.user);
+          votes[idx] = (votes[idx] || 0) + 1;
+          renderSongs();
+          renderLiveVotes();
+        }
+      }
+    });
+
+    document.getElementById('songTitle').addEventListener('keydown', e => { if (e.key === 'Enter') addSong(); });
+  </script>
+</body>
+</html>

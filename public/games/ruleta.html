@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ruleta del Chat - StreamGames</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .ruleta-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      padding: 20px;
+    }
+    .wheel-wrapper {
+      position: relative;
+      width: 380px;
+      height: 380px;
+    }
+    #wheelCanvas { border-radius: 50%; }
+    .wheel-pointer {
+      position: absolute;
+      top: -18px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 2rem;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+    }
+    .winner-banner {
+      background: linear-gradient(135deg, rgba(255,45,85,0.2), rgba(124,58,237,0.2));
+      border: 2px solid var(--pink);
+      border-radius: 16px;
+      padding: 20px 32px;
+      text-align: center;
+      display: none;
+    }
+    .winner-banner.show { display: block; animation: fadeIn 0.5s ease; }
+    .winner-name { font-size: 2rem; font-weight: 900; color: var(--pink); }
+    .participants-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .participant-chip {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 0.8rem;
+      color: var(--text);
+    }
+  </style>
+</head>
+<body class="gradient-bg">
+
+  <nav class="navbar">
+    <div class="logo">🎮 StreamGames</div>
+    <div class="connect-bar">
+      <span class="status-dot" id="statusDot"></span>
+      <input type="text" id="usernameInput" placeholder="@usuario de TikTok">
+      <button class="btn btn-primary" id="connectBtn" onclick="connectTikTok()">Conectar</button>
+      <button class="btn btn-danger" id="disconnectBtn" onclick="disconnectTikTok()" style="display:none">Desconectar</button>
+    </div>
+  </nav>
+
+  <div class="game-layout">
+    <div class="game-main">
+      <a href="../index.html" class="back-btn">← Volver al menú</a>
+
+      <div class="card">
+        <h2 style="margin-bottom:8px;">🎰 Ruleta del Chat</h2>
+        <p style="color:var(--muted); font-size:0.9rem;">El chat escribe <strong style="color:var(--pink)">!entrar</strong> para participar en el sorteo</p>
+      </div>
+
+      <div class="ruleta-container">
+        <div class="wheel-wrapper">
+          <div class="wheel-pointer">▼</div>
+          <canvas id="wheelCanvas" width="380" height="380"></canvas>
+        </div>
+
+        <div id="winnerBanner" class="winner-banner">
+          <div style="font-size:1rem; color:var(--muted); margin-bottom:6px;">🎉 Ganador</div>
+          <div class="winner-name" id="winnerName"></div>
+        </div>
+
+        <div style="display:flex; gap:10px;">
+          <button class="btn btn-primary" id="spinBtn" onclick="spinWheel()">🎰 Girar Ruleta</button>
+          <button class="btn btn-secondary" onclick="clearParticipants()">Limpiar lista</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="game-sidebar">
+      <div class="card">
+        <h4 style="margin-bottom:12px;">👥 Participantes (<span id="partCount">0</span>)</h4>
+        <div class="participants-grid" id="participantsGrid">
+          <p style="color:var(--muted); font-size:0.85rem; width:100%; text-align:center; padding:20px 0;">
+            Nadie ha entrado aún
+          </p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h4 style="margin-bottom:12px;">💬 Chat en vivo</h4>
+        <div class="chat-feed" id="chatFeed"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="../shared.js"></script>
+  <script>
+    const canvas = document.getElementById('wheelCanvas');
+    const ctx = canvas.getContext('2d');
+    const COLORS = ['#ff2d55','#7c3aed','#f59e0b','#22c55e','#3b82f6','#ec4899','#14b8a6','#f97316'];
+
+    let participants = [];
+    let spinning = false;
+    let currentAngle = 0;
+
+    socket.on('chat-message', (data) => {
+      addChatMessage(data);
+      if (data.comment.trim().toLowerCase() === '!entrar') {
+        if (!participants.includes(data.user)) {
+          participants.push(data.user);
+          renderParticipants();
+          drawWheel();
+        }
+      }
+    });
+
+    function drawWheel() {
+      ctx.clearRect(0, 0, 380, 380);
+      if (participants.length === 0) {
+        ctx.fillStyle = 'rgba(255,255,255,0.05)';
+        ctx.beginPath();
+        ctx.arc(190, 190, 180, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#888';
+        ctx.font = '16px Segoe UI';
+        ctx.textAlign = 'center';
+        ctx.fillText('Esperando participantes...', 190, 195);
+        return;
+      }
+
+      const slice = (Math.PI * 2) / participants.length;
+      participants.forEach((p, i) => {
+        const start = currentAngle + i * slice;
+        const end = start + slice;
+
+        ctx.beginPath();
+        ctx.moveTo(190, 190);
+        ctx.arc(190, 190, 180, start, end);
+        ctx.closePath();
+        ctx.fillStyle = COLORS[i % COLORS.length];
+        ctx.fill();
+        ctx.strokeStyle = '#0f0f1a';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Texto
+        ctx.save();
+        ctx.translate(190, 190);
+        ctx.rotate(start + slice / 2);
+        ctx.textAlign = 'right';
+        ctx.fillStyle = 'white';
+        ctx.font = `bold ${Math.min(14, 120 / participants.length + 8)}px Segoe UI`;
+        ctx.shadowColor = 'rgba(0,0,0,0.5)';
+        ctx.shadowBlur = 4;
+        const label = p.length > 12 ? p.substring(0, 12) + '…' : p;
+        ctx.fillText(label, 165, 5);
+        ctx.restore();
+      });
+
+      // Centro
+      ctx.beginPath();
+      ctx.arc(190, 190, 20, 0, Math.PI * 2);
+      ctx.fillStyle = '#0f0f1a';
+      ctx.fill();
+    }
+
+    function spinWheel() {
+      if (spinning || participants.length < 2) {
+        if (participants.length < 2) showToast('Necesitas al menos 2 participantes', 'error');
+        return;
+      }
+      spinning = true;
+      document.getElementById('spinBtn').disabled = true;
+      document.getElementById('winnerBanner').classList.remove('show');
+
+      const totalRotation = (Math.PI * 2 * (5 + Math.random() * 5));
+      const duration = 4000;
+      const start = performance.now();
+      const startAngle = currentAngle;
+
+      function animate(now) {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const ease = 1 - Math.pow(1 - progress, 4);
+        currentAngle = startAngle + totalRotation * ease;
+        drawWheel();
+
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          spinning = false;
+          document.getElementById('spinBtn').disabled = false;
+          showWinner();
+        }
+      }
+      requestAnimationFrame(animate);
+    }
+
+    function showWinner() {
+      const slice = (Math.PI * 2) / participants.length;
+      // El puntero apunta hacia arriba (270° = -PI/2)
+      const normalized = ((-currentAngle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+      const pointer = (Math.PI * 1.5);
+      const adjusted = (pointer - normalized + Math.PI * 2) % (Math.PI * 2);
+      const index = Math.floor(adjusted / slice) % participants.length;
+      const winner = participants[index];
+
+      document.getElementById('winnerName').textContent = '@' + winner;
+      document.getElementById('winnerBanner').classList.add('show');
+      showToast('🎉 Ganador: @' + winner, 'success');
+    }
+
+    function clearParticipants() {
+      participants = [];
+      currentAngle = 0;
+      renderParticipants();
+      drawWheel();
+      document.getElementById('winnerBanner').classList.remove('show');
+    }
+
+    function renderParticipants() {
+      const grid = document.getElementById('participantsGrid');
+      document.getElementById('partCount').textContent = participants.length;
+      if (participants.length === 0) {
+        grid.innerHTML = '<p style="color:var(--muted); font-size:0.85rem; width:100%; text-align:center; padding:20px 0;">Nadie ha entrado aún</p>';
+        return;
+      }
+      grid.innerHTML = participants.map(p => `<div class="participant-chip">@${p}</div>`).join('');
+    }
+
+    drawWheel();
+  </script>
+</body>
+</html>

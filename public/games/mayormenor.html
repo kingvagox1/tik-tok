@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mayor o Menor - StreamGames</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .cards-row {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .playing-card {
+      width: 120px;
+      height: 170px;
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      font-weight: 900;
+      border: 3px solid rgba(255,255,255,0.15);
+      background: var(--card);
+      position: relative;
+      transition: all 0.4s;
+      user-select: none;
+    }
+    .playing-card.red { color: #ff2d55; border-color: rgba(255,45,85,0.4); }
+    .playing-card.black { color: #f0f0f0; border-color: rgba(255,255,255,0.2); }
+    .playing-card.hidden { background: linear-gradient(135deg, #1a1a2e, #2d1b4e); font-size: 2rem; color: rgba(255,255,255,0.2); }
+    .playing-card .suit { font-size: 1.2rem; margin-top: 4px; }
+    .playing-card .corner { position: absolute; font-size: 0.9rem; font-weight: 900; }
+    .playing-card .corner.tl { top: 8px; left: 10px; }
+    .playing-card .corner.br { bottom: 8px; right: 10px; transform: rotate(180deg); }
+    .arrow-badge {
+      font-size: 3rem;
+      color: var(--muted);
+    }
+    .vote-buttons {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+    }
+    .vote-btn {
+      flex: 1;
+      max-width: 200px;
+      padding: 20px;
+      border-radius: 16px;
+      border: 2px solid;
+      cursor: pointer;
+      font-size: 1.1rem;
+      font-weight: 700;
+      transition: all 0.2s;
+      text-align: center;
+    }
+    .vote-mayor {
+      background: rgba(34,197,94,0.1);
+      border-color: rgba(34,197,94,0.4);
+      color: #22c55e;
+    }
+    .vote-mayor:hover { background: rgba(34,197,94,0.2); }
+    .vote-menor {
+      background: rgba(255,45,85,0.1);
+      border-color: rgba(255,45,85,0.4);
+      color: var(--pink);
+    }
+    .vote-menor:hover { background: rgba(255,45,85,0.2); }
+    .vote-count { font-size: 2rem; font-weight: 900; display: block; }
+    .vote-label { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
+    .result-card {
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      display: none;
+    }
+    .result-card.show { display: block; animation: fadeIn 0.4s ease; }
+    .result-card.win { background: rgba(34,197,94,0.15); border: 2px solid #22c55e; }
+    .result-card.lose { background: rgba(255,45,85,0.15); border: 2px solid var(--pink); }
+    .streak-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(245,158,11,0.15);
+      border: 1px solid rgba(245,158,11,0.4);
+      color: #f59e0b;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body class="gradient-bg">
+  <nav class="navbar">
+    <div class="logo">🎮 StreamGames</div>
+    <div class="connect-bar">
+      <span class="status-dot" id="statusDot"></span>
+      <input type="text" id="usernameInput" placeholder="@usuario de TikTok">
+      <button class="btn btn-primary" id="connectBtn" onclick="connectTikTok()">Conectar</button>
+      <button class="btn btn-danger" id="disconnectBtn" onclick="disconnectTikTok()" style="display:none">Desconectar</button>
+    </div>
+  </nav>
+
+  <div class="game-layout">
+    <div class="game-main">
+      <a href="../index.html" class="back-btn">← Volver al menú</a>
+      <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <h2 style="margin-bottom:4px;">🃏 Mayor o Menor</h2>
+          <p style="color:var(--muted); font-size:0.9rem;">Chat vota con <strong style="color:#22c55e">!mayor</strong> o <strong style="color:var(--pink)">!menor</strong></p>
+        </div>
+        <div class="streak-badge">🔥 Racha: <span id="streak">0</span></div>
+      </div>
+
+      <!-- Cartas -->
+      <div class="card">
+        <div class="cards-row">
+          <div class="playing-card" id="currentCard">
+            <div class="corner tl" id="ccTL"></div>
+            <div id="ccVal" style="font-size:2.5rem;"></div>
+            <div class="suit" id="ccSuit"></div>
+            <div class="corner br" id="ccBR"></div>
+          </div>
+          <div class="arrow-badge">→</div>
+          <div class="playing-card hidden" id="nextCard">
+            <div>🂠</div>
+            <div style="font-size:0.8rem; margin-top:8px; color:rgba(255,255,255,0.3);">?</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Votos -->
+      <div class="vote-buttons">
+        <div class="vote-btn vote-mayor">
+          <span class="vote-count" id="vMayor">0</span>
+          ⬆️ Mayor (!mayor)
+          <div class="vote-label" id="pctMayor">0%</div>
+        </div>
+        <div class="vote-btn vote-menor">
+          <span class="vote-count" id="vMenor">0</span>
+          ⬇️ Menor (!menor)
+          <div class="vote-label" id="pctMenor">0%</div>
+        </div>
+      </div>
+
+      <!-- Resultado -->
+      <div class="result-card" id="resultCard">
+        <div style="font-size:2rem;" id="resultEmoji"></div>
+        <div style="font-size:1.3rem; font-weight:700; margin-top:8px;" id="resultText"></div>
+      </div>
+
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-primary" id="revealBtn" onclick="revealNext()">👁 Revelar carta</button>
+        <button class="btn btn-secondary" onclick="nextRound()">▶ Siguiente</button>
+        <button class="btn btn-secondary" onclick="resetDeck()">🔄 Nueva baraja</button>
+      </div>
+    </div>
+
+    <div class="game-sidebar">
+      <div class="card">
+        <h4 style="margin-bottom:12px;">📊 Estadísticas</h4>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <div style="display:flex; justify-content:space-between; font-size:0.9rem;">
+            <span style="color:var(--muted);">Rondas jugadas</span>
+            <span id="rounds">0</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:0.9rem;">
+            <span style="color:var(--muted);">Chat acertó</span>
+            <span style="color:#22c55e;" id="wins">0</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:0.9rem;">
+            <span style="color:var(--muted);">Chat falló</span>
+            <span style="color:var(--pink);" id="losses">0</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:0.9rem;">
+            <span style="color:var(--muted);">Mejor racha</span>
+            <span style="color:#f59e0b;" id="bestStreak">0</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h4 style="margin-bottom:12px;">💬 Chat en vivo</h4>
+        <div class="chat-feed" id="chatFeed"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="../shared.js"></script>
+  <script>
+    const SUITS = ['♥','♦','♣','♠'];
+    const VALUES = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+    const RED_SUITS = new Set(['♥','♦']);
+
+    let deck = [];
+    let currentCard = null;
+    let nextCardVal = null;
+    let votes = { mayor: 0, menor: 0 };
+    let voters = new Set();
+    let revealed = false;
+    let streak = 0, bestStreak = 0, wins = 0, losses = 0, rounds = 0;
+
+    function buildDeck() {
+      deck = [];
+      SUITS.forEach(s => VALUES.forEach(v => deck.push({ v, s })));
+      // Shuffle
+      for (let i = deck.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [deck[i], deck[j]] = [deck[j], deck[i]];
+      }
+    }
+
+    function cardValue(v) {
+      const map = { A: 1, J: 11, Q: 12, K: 13 };
+      return map[v] ?? parseInt(v);
+    }
+
+    function drawCard() {
+      if (deck.length === 0) buildDeck();
+      return deck.pop();
+    }
+
+    function showCard(card, elId) {
+      const el = document.getElementById(elId);
+      const isRed = RED_SUITS.has(card.s);
+      el.className = 'playing-card ' + (isRed ? 'red' : 'black');
+      el.innerHTML = `
+        <div class="corner tl">${card.v}${card.s}</div>
+        <div style="font-size:2.5rem;">${card.v}</div>
+        <div class="suit">${card.s}</div>
+        <div class="corner br">${card.v}${card.s}</div>
+      `;
+    }
+
+    function nextRound() {
+      if (!currentCard) { currentCard = drawCard(); }
+      nextCardVal = drawCard();
+      votes = { mayor: 0, menor: 0 };
+      voters.clear();
+      revealed = false;
+      showCard(currentCard, 'currentCard');
+      document.getElementById('nextCard').className = 'playing-card hidden';
+      document.getElementById('nextCard').innerHTML = '<div>🂠</div><div style="font-size:0.8rem; margin-top:8px; color:rgba(255,255,255,0.3);">?</div>';
+      document.getElementById('resultCard').classList.remove('show');
+      updateVotes();
+    }
+
+    function revealNext() {
+      if (!nextCardVal || revealed) return;
+      revealed = true;
+      showCard(nextCardVal, 'nextCard');
+
+      const cv = cardValue(currentCard.v);
+      const nv = cardValue(nextCardVal.v);
+      const chatVotedMayor = votes.mayor >= votes.menor;
+      const actuallyMayor = nv > cv;
+      const actuallyMenor = nv < cv;
+      const tie = nv === cv;
+
+      rounds++;
+      let win = false;
+      if (!tie) {
+        win = (chatVotedMayor && actuallyMayor) || (!chatVotedMayor && actuallyMenor);
+      }
+
+      const result = document.getElementById('resultCard');
+      if (tie) {
+        result.className = 'result-card show';
+        result.style.background = 'rgba(245,158,11,0.15)';
+        result.style.border = '2px solid #f59e0b';
+        document.getElementById('resultEmoji').textContent = '🤝';
+        document.getElementById('resultText').textContent = `¡Empate! La carta era ${nextCardVal.v}${nextCardVal.s}`;
+      } else if (win) {
+        result.className = 'result-card win show';
+        document.getElementById('resultEmoji').textContent = '🎉';
+        document.getElementById('resultText').textContent = `¡El chat acertó! Era ${actuallyMayor ? 'mayor' : 'menor'} (${nextCardVal.v}${nextCardVal.s})`;
+        streak++; wins++;
+        if (streak > bestStreak) bestStreak = streak;
+      } else {
+        result.className = 'result-card lose show';
+        document.getElementById('resultEmoji').textContent = '😬';
+        document.getElementById('resultText').textContent = `¡El chat falló! Era ${actuallyMayor ? 'mayor' : 'menor'} (${nextCardVal.v}${nextCardVal.s})`;
+        streak = 0; losses++;
+      }
+
+      currentCard = nextCardVal;
+      updateStats();
+    }
+
+    function updateVotes() {
+      const total = votes.mayor + votes.menor || 1;
+      document.getElementById('vMayor').textContent = votes.mayor;
+      document.getElementById('vMenor').textContent = votes.menor;
+      document.getElementById('pctMayor').textContent = Math.round(votes.mayor / total * 100) + '%';
+      document.getElementById('pctMenor').textContent = Math.round(votes.menor / total * 100) + '%';
+    }
+
+    function updateStats() {
+      document.getElementById('streak').textContent = streak;
+      document.getElementById('bestStreak').textContent = bestStreak;
+      document.getElementById('wins').textContent = wins;
+      document.getElementById('losses').textContent = losses;
+      document.getElementById('rounds').textContent = rounds;
+    }
+
+    function resetDeck() {
+      buildDeck();
+      currentCard = null;
+      streak = 0; wins = 0; losses = 0; rounds = 0; bestStreak = 0;
+      updateStats();
+      nextRound();
+      showToast('Nueva baraja lista', 'success');
+    }
+
+    socket.on('chat-message', (data) => {
+      addChatMessage(data);
+      if (revealed || voters.has(data.user)) return;
+      const msg = data.comment.trim().toLowerCase();
+      if (msg === '!mayor') { voters.add(data.user); votes.mayor++; updateVotes(); }
+      else if (msg === '!menor') { voters.add(data.user); votes.menor++; updateVotes(); }
+    });
+
+    buildDeck();
+    nextRound();
+  </script>
+</body>
+</html>

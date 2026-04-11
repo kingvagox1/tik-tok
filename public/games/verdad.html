@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verdad o Reto - StreamGames</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .vr-card {
+      border-radius: 20px;
+      padding: 36px;
+      text-align: center;
+      min-height: 180px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      transition: all 0.4s;
+    }
+    .vr-card.verdad {
+      background: linear-gradient(135deg, rgba(59,130,246,0.2), rgba(124,58,237,0.2));
+      border: 2px solid rgba(59,130,246,0.5);
+    }
+    .vr-card.reto {
+      background: linear-gradient(135deg, rgba(255,45,85,0.2), rgba(245,158,11,0.2));
+      border: 2px solid rgba(255,45,85,0.5);
+    }
+    .vr-card.idle {
+      background: rgba(255,255,255,0.03);
+      border: 2px dashed rgba(255,255,255,0.1);
+    }
+    .vr-type { font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; }
+    .vr-type.verdad { color: #3b82f6; }
+    .vr-type.reto { color: var(--pink); }
+    .vr-text { font-size: 1.6rem; font-weight: 700; line-height: 1.3; }
+    .vr-player { font-size: 1rem; color: var(--muted); }
+    .vr-player span { color: var(--pink); font-weight: 700; }
+    .players-setup { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .player-tag {
+      background: rgba(255,45,85,0.15);
+      border: 1px solid rgba(255,45,85,0.3);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 0.85rem;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .player-tag button {
+      background: none; border: none; color: var(--muted);
+      cursor: pointer; font-size: 0.9rem; padding: 0;
+    }
+    .player-tag button:hover { color: var(--pink); }
+    .queue-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+    .tab-btn {
+      flex: 1; padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.04); color: var(--muted); cursor: pointer; font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+    .tab-btn.active { background: rgba(255,45,85,0.15); border-color: var(--pink); color: var(--text); }
+    .queue-section { display: none; }
+    .queue-section.active { display: flex; flex-direction: column; gap: 6px; }
+    .q-item {
+      background: rgba(255,255,255,0.04); border-radius: 8px;
+      padding: 8px 12px; font-size: 0.82rem;
+      display: flex; justify-content: space-between; align-items: center; gap: 8px;
+    }
+    .q-item .q-user { color: var(--pink); font-size: 0.75rem; flex-shrink: 0; }
+    .q-item .use-btn {
+      background: rgba(255,45,85,0.2); border: 1px solid var(--pink);
+      color: var(--pink); padding: 3px 8px; border-radius: 5px;
+      cursor: pointer; font-size: 0.72rem; flex-shrink: 0;
+    }
+    .spin-mini {
+      width: 120px; height: 120px; border-radius: 50%;
+      border: 4px solid rgba(255,255,255,0.1);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem; font-weight: 700; text-align: center;
+      transition: all 0.3s; cursor: pointer;
+      background: rgba(255,45,85,0.1);
+      border-color: var(--pink);
+    }
+  </style>
+</head>
+<body class="gradient-bg">
+
+  <nav class="navbar">
+    <div class="logo">🎮 StreamGames</div>
+    <div class="connect-bar">
+      <span class="status-dot" id="statusDot"></span>
+      <input type="text" id="usernameInput" placeholder="@usuario de TikTok">
+      <button class="btn btn-primary" id="connectBtn" onclick="connectTikTok()">Conectar</button>
+      <button class="btn btn-danger" id="disconnectBtn" onclick="disconnectTikTok()" style="display:none">Desconectar</button>
+    </div>
+  </nav>
+
+  <div class="game-layout">
+    <div class="game-main">
+      <a href="../index.html" class="back-btn">← Volver al menú</a>
+
+      <div class="card">
+        <h2 style="margin-bottom:8px;">🎯 Verdad o Reto</h2>
+        <p style="color:var(--muted); font-size:0.9rem;">
+          Chat propone con <strong style="color:#3b82f6">!verdad [texto]</strong> o <strong style="color:var(--pink)">!reto [texto]</strong>
+        </p>
+      </div>
+
+      <!-- Jugadores -->
+      <div class="card">
+        <h4 style="margin-bottom:12px;">👥 Jugadores en el grupo</h4>
+        <div class="players-setup" id="playersSetup">
+          <p style="color:var(--muted); font-size:0.85rem;" id="noPlayersMsg">Agrega jugadores abajo</p>
+        </div>
+        <div style="display:flex; gap:8px; margin-top:12px;">
+          <input type="text" id="newPlayerInput" placeholder="Nombre del jugador" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:var(--text); padding:8px 12px; border-radius:8px; font-size:0.9rem; flex:1;">
+          <button class="btn btn-primary" onclick="addPlayer()">Agregar</button>
+        </div>
+      </div>
+
+      <!-- Carta actual -->
+      <div class="vr-card idle" id="vrCard">
+        <div style="font-size:3rem;">🎯</div>
+        <div class="vr-text" style="color:var(--muted);">Elige una verdad o reto para empezar</div>
+      </div>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+        <div class="spin-mini" id="playerSpinner" onclick="spinPlayer()">Girar<br>jugador</div>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <button class="btn btn-primary" onclick="pickRandom('verdad')">🔵 Verdad aleatoria</button>
+          <button class="btn btn-danger" onclick="pickRandom('reto')">🔴 Reto aleatorio</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="game-sidebar">
+      <div class="card">
+        <h4 style="margin-bottom:12px;">📋 Cola del chat</h4>
+        <div class="queue-tabs">
+          <button class="tab-btn active" onclick="switchTab('verdad', this)">💙 Verdades (<span id="vCount">0</span>)</button>
+          <button class="tab-btn" onclick="switchTab('reto', this)">❤️ Retos (<span id="rCount">0</span>)</button>
+        </div>
+        <div class="queue-section active" id="qVerdad">
+          <p style="color:var(--muted); font-size:0.82rem; text-align:center; padding:10px 0;">Sin verdades aún</p>
+        </div>
+        <div class="queue-section" id="qReto">
+          <p style="color:var(--muted); font-size:0.82rem; text-align:center; padding:10px 0;">Sin retos aún</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h4 style="margin-bottom:12px;">💬 Chat en vivo</h4>
+        <div class="chat-feed" id="chatFeed"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="../shared.js"></script>
+  <script>
+    let players = [];
+    let queues = { verdad: [], reto: [] };
+    let currentPlayer = null;
+
+    socket.on('chat-message', (data) => {
+      addChatMessage(data);
+      const msg = data.comment.trim();
+      const lower = msg.toLowerCase();
+
+      if (lower.startsWith('!verdad ')) {
+        const text = msg.substring(8).trim();
+        if (text.length > 3) { queues.verdad.push({ user: data.user, text }); renderQueues(); }
+      } else if (lower.startsWith('!reto ')) {
+        const text = msg.substring(6).trim();
+        if (text.length > 3) { queues.reto.push({ user: data.user, text }); renderQueues(); }
+      }
+    });
+
+    function addPlayer() {
+      const input = document.getElementById('newPlayerInput');
+      const name = input.value.trim();
+      if (!name || players.includes(name)) return;
+      players.push(name);
+      input.value = '';
+      renderPlayers();
+    }
+
+    function removePlayer(name) {
+      players = players.filter(p => p !== name);
+      renderPlayers();
+    }
+
+    function renderPlayers() {
+      const setup = document.getElementById('playersSetup');
+      const msg = document.getElementById('noPlayersMsg');
+      if (players.length === 0) {
+        setup.innerHTML = '<p style="color:var(--muted); font-size:0.85rem;" id="noPlayersMsg">Agrega jugadores abajo</p>';
+        return;
+      }
+      setup.innerHTML = players.map(p => `
+        <div class="player-tag">
+          ${escapeHtml(p)}
+          <button onclick="removePlayer('${escapeHtml(p)}')" title="Quitar">✕</button>
+        </div>
+      `).join('');
+    }
+
+    function spinPlayer() {
+      if (players.length === 0) return showToast('Agrega jugadores primero', 'error');
+      const spinner = document.getElementById('playerSpinner');
+      let count = 0;
+      const interval = setInterval(() => {
+        const random = players[Math.floor(Math.random() * players.length)];
+        spinner.textContent = random;
+        count++;
+        if (count > 15) {
+          clearInterval(interval);
+          currentPlayer = random;
+          spinner.style.borderColor = '#22c55e';
+          showToast('Le toca a: ' + random, 'success');
+        }
+      }, 100);
+    }
+
+    function pickRandom(type) {
+      if (queues[type].length === 0) return showToast(`No hay ${type}s en la cola`, 'error');
+      const item = queues[type].splice(Math.floor(Math.random() * queues[type].length), 1)[0];
+      showCard(type, item);
+      renderQueues();
+    }
+
+    function useItem(type, index) {
+      const item = queues[type].splice(index, 1)[0];
+      showCard(type, item);
+      renderQueues();
+    }
+
+    function showCard(type, item) {
+      const card = document.getElementById('vrCard');
+      card.className = `vr-card ${type}`;
+      const playerText = currentPlayer ? `Le toca a <span>${currentPlayer}</span>` : 'Elige un jugador';
+      card.innerHTML = `
+        <div class="vr-type ${type}">${type === 'verdad' ? '💙 Verdad' : '❤️ Reto'}</div>
+        <div class="vr-text">${escapeHtml(item.text)}</div>
+        <div class="vr-player">${playerText}</div>
+        <div style="color:var(--muted); font-size:0.8rem;">Propuesto por @${item.user}</div>
+      `;
+    }
+
+    function renderQueues() {
+      ['verdad', 'reto'].forEach(type => {
+        const container = document.getElementById('q' + type.charAt(0).toUpperCase() + type.slice(1));
+        const count = document.getElementById(type === 'verdad' ? 'vCount' : 'rCount');
+        count.textContent = queues[type].length;
+        if (queues[type].length === 0) {
+          container.innerHTML = `<p style="color:var(--muted); font-size:0.82rem; text-align:center; padding:10px 0;">Sin ${type}s aún</p>`;
+          return;
+        }
+        container.innerHTML = queues[type].map((item, i) => `
+          <div class="q-item">
+            <span class="q-user">@${item.user}</span>
+            <span style="flex:1; font-size:0.82rem;">${escapeHtml(item.text)}</span>
+            <button class="use-btn" onclick="useItem('${type}', ${i})">Usar</button>
+          </div>
+        `).join('');
+      });
+    }
+
+    function switchTab(type, btn) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.queue-section').forEach(s => s.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('q' + type.charAt(0).toUpperCase() + type.slice(1)).classList.add('active');
+    }
+
+    document.getElementById('newPlayerInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') addPlayer();
+    });
+  </script>
+</body>
+</html>

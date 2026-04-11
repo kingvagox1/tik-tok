@@ -1,0 +1,1109 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ruleta de Premios – StreamGames</title>
+  <link rel="stylesheet" href="../style.css" />
+  <style>
+    /* ── Layout 3 columnas ── */
+    .rp-layout {
+      display: grid;
+      grid-template-columns: 1fr 300px 280px;
+      gap: 18px;
+      max-width: 1340px;
+      margin: 0 auto;
+      padding: 20px 24px 60px;
+    }
+    @media (max-width: 1100px) {
+      .rp-layout { grid-template-columns: 1fr 280px; }
+      .rp-col-right { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    }
+    @media (max-width: 700px) {
+      .rp-layout { grid-template-columns: 1fr; }
+      .rp-col-right { grid-template-columns: 1fr; }
+    }
+
+    /* ── Ruleta canvas ── */
+    .wheel-wrapper {
+      position: relative;
+      width: 340px;
+      height: 340px;
+      margin: 0 auto;
+      filter: drop-shadow(0 8px 32px rgba(124,58,237,0.45));
+    }
+    #wheelCanvas { border-radius: 50%; display: block; }
+    .wheel-pointer {
+      position: absolute;
+      top: -24px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 2.4rem;
+      filter: drop-shadow(0 3px 8px rgba(0,0,0,0.8));
+      z-index: 2;
+      line-height: 1;
+    }
+    .wheel-center-btn {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: var(--dark);
+      border: 3px solid rgba(255,255,255,0.18);
+      color: var(--text);
+      font-size: 1.5rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, transform 0.15s;
+      z-index: 3;
+      box-shadow: 0 0 20px rgba(0,0,0,0.6);
+    }
+    .wheel-center-btn:hover { background: var(--card); transform: translate(-50%, -50%) scale(1.1); }
+    .wheel-center-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: translate(-50%, -50%); }
+
+    /* ── Cola chips ── */
+    .queue-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      min-height: 38px;
+      align-items: flex-start;
+    }
+    .queue-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(124,58,237,0.18);
+      border: 1px solid rgba(124,58,237,0.35);
+      border-radius: 20px;
+      padding: 4px 11px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #c4b5fd;
+      animation: fadeIn 0.2s ease;
+    }
+    .queue-chip.first {
+      background: rgba(255,45,85,0.2);
+      border-color: rgba(255,45,85,0.45);
+      color: #fda4af;
+    }
+    .queue-chip-pos {
+      background: rgba(255,255,255,0.12);
+      border-radius: 50%;
+      width: 18px;
+      height: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.68rem;
+      font-weight: 700;
+    }
+
+    /* ── Cooldown bar ── */
+    .cooldown-item {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      font-size: 0.75rem;
+    }
+    .cooldown-bar-track {
+      height: 4px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .cooldown-bar-fill {
+      height: 100%;
+      background: var(--gradient);
+      border-radius: 2px;
+      transition: width 0.5s linear;
+    }
+    .cooldown-list { display: flex; flex-direction: column; gap: 6px; max-height: 120px; overflow-y: auto; }
+
+    /* ── Premios lista ── */
+    .prize-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.82rem;
+      animation: fadeIn 0.2s ease;
+    }
+    .prize-color-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+    .prize-info { flex: 1; min-width: 0; }
+    .prize-name { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .prize-meta { color: var(--muted); font-size: 0.72rem; }
+    .prize-del {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 2px 5px;
+      border-radius: 4px;
+      transition: color 0.2s, background 0.2s;
+      line-height: 1;
+    }
+    .prize-del:hover { color: var(--danger); background: rgba(239,68,68,0.1); }
+
+    .add-prize-form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .add-prize-form .span2 { grid-column: 1 / -1; }
+
+    /* ── Config row ── */
+    .config-row { display: flex; align-items: center; gap: 10px; }
+    .config-row label { font-size: 0.8rem; color: var(--muted); min-width: 130px; }
+    .config-row input[type="number"] {
+      width: 80px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      padding: 6px 10px;
+      font-size: 0.85rem;
+      outline: none;
+    }
+    .config-row input[type="number"]:focus { border-color: var(--purple); }
+
+    /* ── Leaderboard ── */
+    .lb-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      transition: background 0.2s;
+      animation: fadeIn 0.2s ease;
+    }
+    .lb-row:hover { background: rgba(255,255,255,0.04); }
+    .lb-rank { font-weight: 900; font-size: 0.9rem; min-width: 24px; text-align: center; }
+    .lb-rank.gold   { color: #fbbf24; }
+    .lb-rank.silver { color: #94a3b8; }
+    .lb-rank.bronze { color: #b45309; }
+    .lb-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .lb-user { flex: 1; font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .lb-pts  { font-weight: 700; color: #fbbf24; white-space: nowrap; }
+    .lb-spins { color: var(--muted); font-size: 0.72rem; white-space: nowrap; }
+
+    /* ── Historial ── */
+    .hist-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 8px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      border-left: 3px solid transparent;
+      animation: fadeIn 0.2s ease;
+    }
+    .hist-emoji { font-size: 1.1rem; flex-shrink: 0; }
+    .hist-info  { flex: 1; min-width: 0; }
+    .hist-user  { font-weight: 700; color: #a78bfa; }
+    .hist-prize { color: var(--text); }
+    .hist-pts   { color: var(--muted); font-size: 0.7rem; }
+    .hist-time  { color: var(--muted); font-size: 0.68rem; white-space: nowrap; }
+
+    /* ── Chat en vivo (columna derecha) ── */
+    .rp-live-feed {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      overflow-y: auto;
+      max-height: 260px;
+      padding-right: 4px;
+    }
+
+    /* ── Popup ganador ── */
+    .win-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .win-overlay.show { opacity: 1; pointer-events: auto; }
+
+    .win-popup {
+      background: var(--card);
+      border: 2px solid var(--pink);
+      border-radius: 24px;
+      padding: 44px 52px;
+      text-align: center;
+      max-width: 440px;
+      width: 90%;
+      box-shadow: 0 0 80px rgba(255,45,85,0.4), 0 24px 64px rgba(0,0,0,0.7);
+      transform: scale(0.7);
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .win-overlay.show .win-popup { transform: scale(1); }
+
+    .win-prize-emoji { font-size: 4.5rem; line-height: 1; margin-bottom: 14px; }
+    .win-prize-name {
+      font-size: 2rem;
+      font-weight: 900;
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+    .win-user { font-size: 1.1rem; color: var(--muted); margin-bottom: 8px; }
+    .win-user strong { color: var(--text); }
+    .win-pts { font-size: 1.6rem; font-weight: 900; color: #fbbf24; }
+    .win-pts-label { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+    .win-bar { height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 22px; overflow: hidden; }
+    .win-bar-fill {
+      height: 100%;
+      background: var(--gradient);
+      border-radius: 2px;
+      transform-origin: left;
+      animation: shrinkBar 3.2s linear forwards;
+    }
+    @keyframes shrinkBar {
+      from { transform: scaleX(1); }
+      to   { transform: scaleX(0); }
+    }
+
+    /* ── Confetti ── */
+    .confetti-piece {
+      position: fixed;
+      pointer-events: none;
+      z-index: 1001;
+      border-radius: 2px;
+      animation: confettiFall linear forwards;
+    }
+    @keyframes confettiFall {
+      0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(105vh) rotate(720deg); opacity: 0; }
+    }
+
+    /* ── Spinning indicator ── */
+    .spinning-indicator { display: inline-block; animation: spin-ease 0.8s linear infinite; }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="navbar-logo">🎮 StreamGames</div>
+  <div class="navbar-connect">
+    <span class="status-dot" id="statusDot"></span>
+    <input type="text" id="usernameInput" placeholder="@usuario de TikTok" />
+    <button class="btn btn-primary btn-sm" id="connectBtn" onclick="connectTikTok()">Conectar</button>
+    <button class="btn btn-danger btn-sm" id="disconnectBtn" onclick="disconnectTikTok()" style="display:none">Desconectar</button>
+  </div>
+</nav>
+
+<!-- POPUP GANADOR -->
+<div class="win-overlay" id="winOverlay" onclick="closeWinPopup()">
+  <div class="win-popup" onclick="event.stopPropagation()">
+    <div class="win-prize-emoji" id="winEmoji">🎁</div>
+    <div class="win-prize-name" id="winPrizeName">Premio</div>
+    <div class="win-user">Ganador: <strong id="winUsername">@usuario</strong></div>
+    <div class="win-pts" id="winPts"></div>
+    <div class="win-pts-label" id="winPtsLabel"></div>
+    <div class="win-bar"><div class="win-bar-fill" id="winBarFill"></div></div>
+  </div>
+</div>
+
+<!-- LAYOUT PRINCIPAL -->
+<div class="rp-layout">
+
+  <!-- ══ COLUMNA 1: Ruleta + Cola ══ -->
+  <div class="rp-col-left" style="display:flex;flex-direction:column;gap:18px;">
+
+    <a href="../index.html" class="back-btn">← Volver al menú</a>
+
+    <!-- Ruleta canvas -->
+    <div class="card" style="text-align:center;">
+      <div class="card-title" style="justify-content:center;font-size:1.1rem;">🎡 Ruleta de Premios</div>
+      <div class="wheel-wrapper" id="wheelWrapper">
+        <div class="wheel-pointer">▼</div>
+        <canvas id="wheelCanvas" width="340" height="340"></canvas>
+        <button class="wheel-center-btn" id="centerSpinBtn" onclick="spinNext()" title="Girar">▶</button>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap;">
+        <button class="btn btn-primary" id="spinBtn" onclick="spinNext()">
+          <span id="spinBtnIcon">🎰</span> Girar siguiente
+        </button>
+        <button class="btn btn-secondary" id="randomBtn" onclick="spinRandom()">🎲 Giro aleatorio</button>
+        <button class="btn btn-secondary btn-sm" onclick="clearQueue()">🗑 Limpiar cola</button>
+      </div>
+      <p style="color:var(--muted);font-size:0.8rem;margin-top:10px;">
+        El chat escribe <strong style="color:var(--pink)">!girar</strong> para entrar a la cola
+      </p>
+    </div>
+
+    <!-- Cola de giro -->
+    <div class="card">
+      <div class="card-title" style="justify-content:space-between;">
+        <span>⏳ Cola de giro (<span id="queueCount">0</span>)</span>
+      </div>
+      <div class="queue-chips" id="queueChips">
+        <span class="section-empty" style="width:100%">La cola está vacía</span>
+      </div>
+    </div>
+
+    <!-- Cooldowns activos -->
+    <div class="card">
+      <div class="card-title">⏱ Cooldowns activos</div>
+      <div class="cooldown-list" id="cooldownList">
+        <span class="section-empty">Sin cooldowns activos</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ COLUMNA 2: Config premios + Historial ══ -->
+  <div class="rp-col-mid" style="display:flex;flex-direction:column;gap:18px;">
+
+    <!-- Config general -->
+    <div class="card">
+      <div class="card-title">⚙️ Configuración</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div class="config-row">
+          <label>Cooldown por usuario (s)</label>
+          <input type="number" id="cooldownSecs" value="60" min="0" max="3600" />
+        </div>
+        <div class="config-row">
+          <label>Auto-girar cada (s)</label>
+          <input type="number" id="autoSpinSecs" value="0" min="0" max="120"
+            title="0 = desactivado. Gira automáticamente si hay cola" />
+        </div>
+        <button class="btn btn-secondary btn-sm w-full" onclick="applyConfig()">✅ Aplicar</button>
+      </div>
+    </div>
+
+    <!-- Lista de premios -->
+    <div class="card" style="flex:1;">
+      <div class="card-title" style="justify-content:space-between;">
+        <span>🎁 Premios (<span id="prizesCount">0</span>)</span>
+        <button class="btn btn-secondary btn-sm" onclick="resetPrizes()">↺ Restablecer</button>
+      </div>
+      <div id="prizesList" style="display:flex;flex-direction:column;gap:7px;margin-bottom:14px;max-height:260px;overflow-y:auto;"></div>
+
+      <!-- Agregar premio -->
+      <div style="border-top:1px solid var(--border);padding-top:14px;">
+        <div class="card-title" style="font-size:0.85rem;margin-bottom:10px;">➕ Agregar premio</div>
+        <div class="add-prize-form">
+          <div class="form-group">
+            <label class="form-label">Emoji</label>
+            <input class="form-input" id="newEmoji" placeholder="🎁" maxlength="4" style="font-size:1.2rem;text-align:center;" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nombre</label>
+            <input class="form-input" id="newName" placeholder="Premio especial" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Puntos</label>
+            <input class="form-input" type="number" id="newPoints" placeholder="100" min="0" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Peso (prob.)</label>
+            <input class="form-input" type="number" id="newWeight" placeholder="10" min="1" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Color</label>
+            <input class="form-input" type="color" id="newColor" value="#7c3aed" style="padding:4px;height:38px;cursor:pointer;" />
+          </div>
+          <div class="form-group" style="align-self:end;">
+            <button class="btn btn-primary w-full" onclick="addPrize()">Agregar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Historial de giros -->
+    <div class="card">
+      <div class="card-title" style="justify-content:space-between;">
+        <span>📜 Últimos giros</span>
+        <button class="btn btn-secondary btn-sm" onclick="clearHistory()">Limpiar</button>
+      </div>
+      <div id="historyList" style="display:flex;flex-direction:column;gap:4px;max-height:300px;overflow-y:auto;">
+        <span class="section-empty">Sin giros aún</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ COLUMNA 3: Leaderboard + Chat en vivo ══ -->
+  <div class="rp-col-right" style="display:flex;flex-direction:column;gap:18px;">
+
+    <!-- Leaderboard -->
+    <div class="card">
+      <div class="card-title" style="justify-content:space-between;">
+        <span>🏆 Leaderboard</span>
+        <button class="btn btn-secondary btn-sm" onclick="clearLeaderboard()">Limpiar</button>
+      </div>
+      <div id="leaderboard" style="display:flex;flex-direction:column;gap:2px;max-height:320px;overflow-y:auto;">
+        <span class="section-empty">Sin jugadores aún</span>
+      </div>
+    </div>
+
+    <!-- Chat en vivo -->
+    <div class="card" style="flex:1;">
+      <div class="card-title">💬 Chat en vivo</div>
+      <div class="rp-live-feed" id="rpLiveFeed"></div>
+    </div>
+
+  </div>
+
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="../shared.js"></script>
+<script>
+/* ============================================================
+   RULETA DE PREMIOS – Lógica principal
+   ============================================================ */
+
+// ── Premios por defecto ──
+const DEFAULT_PRIZES = [
+  { id:1, emoji:'🎉', name:'¡Ganaste!',   points:100, color:'#ff2d55', weight:20 },
+  { id:2, emoji:'⭐', name:'Estrella',    points:50,  color:'#f59e0b', weight:30 },
+  { id:3, emoji:'💎', name:'Diamante',    points:200, color:'#3b82f6', weight:10 },
+  { id:4, emoji:'🎁', name:'Regalo',      points:75,  color:'#22c55e', weight:25 },
+  { id:5, emoji:'💀', name:'Sin suerte',  points:0,   color:'#6b7280', weight:30 },
+  { id:6, emoji:'🔥', name:'En llamas',   points:150, color:'#f97316', weight:15 },
+  { id:7, emoji:'❄️', name:'Congelado',   points:25,  color:'#06b6d4', weight:20 },
+  { id:8, emoji:'👑', name:'Rey/Reina',   points:500, color:'#7c3aed', weight:5  },
+];
+
+// ── Estado global ──
+let prizes       = JSON.parse(JSON.stringify(DEFAULT_PRIZES));
+let players      = {};   // { user: { points, spins } }
+let spinQueue    = [];   // [ username, ... ]
+let cooldowns    = {};   // { username: expiryTimestamp }
+let spinning     = false;
+let currentAngle = 0;
+let prizeIdCounter = 9;
+let autoSpinTimer  = null;
+let cooldownInterval = null;
+
+// Config
+let cooldownSecs = 60;
+let autoSpinSecs = 0;
+
+const LS_KEY_LB = 'streamgames-leaderboard';
+
+// ── Canvas ──
+const canvas = document.getElementById('wheelCanvas');
+const ctx    = canvas.getContext('2d');
+
+/* ============================================================
+   PERSISTENCIA – Leaderboard en localStorage
+   ============================================================ */
+function saveLB() {
+  localStorage.setItem(LS_KEY_LB, JSON.stringify(players));
+}
+
+function loadLB() {
+  try {
+    const raw = localStorage.getItem(LS_KEY_LB);
+    if (raw) players = JSON.parse(raw);
+  } catch (_) { players = {}; }
+}
+
+/* ============================================================
+   DIBUJO DE LA RULETA
+   ============================================================ */
+function drawWheel(angle) {
+  const cx = canvas.width  / 2;
+  const cy = canvas.height / 2;
+  const r  = cx - 4;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (prizes.length === 0) {
+    ctx.fillStyle = 'rgba(255,255,255,0.05)';
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#888';
+    ctx.font = '14px Segoe UI';
+    ctx.textAlign = 'center';
+    ctx.fillText('Sin premios configurados', cx, cy);
+    return;
+  }
+
+  const totalWeight = prizes.reduce((s, p) => s + p.weight, 0);
+  let startAngle = (angle !== undefined) ? angle : currentAngle;
+
+  prizes.forEach((prize) => {
+    const sliceAngle = (prize.weight / totalWeight) * Math.PI * 2;
+    const endAngle   = startAngle + sliceAngle;
+
+    // Sector
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, startAngle, endAngle);
+    ctx.closePath();
+    ctx.fillStyle = prize.color;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Texto
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(startAngle + sliceAngle / 2);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#fff';
+    const fontSize = Math.max(9, Math.min(13, 200 / prizes.length));
+    ctx.font = `bold ${fontSize}px Segoe UI`;
+    ctx.shadowColor = 'rgba(0,0,0,0.8)';
+    ctx.shadowBlur = 5;
+    const label = prize.emoji + ' ' + (prize.name.length > 10 ? prize.name.slice(0, 10) + '…' : prize.name);
+    ctx.fillText(label, r - 10, 4);
+    ctx.restore();
+
+    startAngle = endAngle;
+  });
+
+  // Borde exterior con brillo
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  // Centro oscuro
+  ctx.beginPath();
+  ctx.arc(cx, cy, 28, 0, Math.PI * 2);
+  ctx.fillStyle = '#0f0f1a';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.22)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+}
+
+/* ============================================================
+   SELECCIÓN DE PREMIO POR PESO
+   ============================================================ */
+function pickPrize() {
+  const totalWeight = prizes.reduce((s, p) => s + p.weight, 0);
+  let rand = Math.random() * totalWeight;
+  for (const prize of prizes) {
+    rand -= prize.weight;
+    if (rand <= 0) return prize;
+  }
+  return prizes[prizes.length - 1];
+}
+
+/* ============================================================
+   CALCULAR ÁNGULO PARA UN PREMIO ESPECÍFICO
+   ============================================================ */
+function angleForPrize(targetPrize) {
+  const totalWeight = prizes.reduce((s, p) => s + p.weight, 0);
+  let accumulated = 0;
+  for (const prize of prizes) {
+    const sliceAngle = (prize.weight / totalWeight) * Math.PI * 2;
+    if (prize.id === targetPrize.id) {
+      return accumulated + sliceAngle / 2;
+    }
+    accumulated += sliceAngle;
+  }
+  return 0;
+}
+
+/* ============================================================
+   ANIMACIÓN DE GIRO (ease-out cúbico)
+   ============================================================ */
+function animateSpin(totalRotation, duration, onComplete) {
+  const startAngle = currentAngle;
+  const startTime  = performance.now();
+
+  function frame(now) {
+    const elapsed  = now - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    // Ease out cubic
+    const ease = 1 - Math.pow(1 - progress, 3);
+    const angle = startAngle + totalRotation * ease;
+    drawWheel(angle);
+
+    if (progress < 1) {
+      requestAnimationFrame(frame);
+    } else {
+      currentAngle = startAngle + totalRotation;
+      drawWheel(currentAngle);
+      onComplete();
+    }
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ============================================================
+   CALCULAR ROTACIÓN TOTAL PARA APUNTAR A UN PREMIO
+   ============================================================ */
+function calcRotation(winner) {
+  const sectorMid = angleForPrize(winner);
+  // Puntero en la parte superior = 270° = 3π/2
+  const pointerAngle = Math.PI * 1.5;
+  const normalizedCurrent = ((currentAngle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+  let delta = pointerAngle - sectorMid - normalizedCurrent;
+  delta = ((delta % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+  if (delta < Math.PI * 0.5) delta += Math.PI * 2;
+  // 5-8 vueltas completas + delta
+  return Math.PI * 2 * (5 + Math.floor(Math.random() * 4)) + delta;
+}
+
+/* ============================================================
+   GIRAR SIGUIENTE EN COLA
+   ============================================================ */
+function spinNext() {
+  if (spinning) return;
+  if (prizes.length === 0) { showToast('Agrega premios primero', 'error'); return; }
+  if (spinQueue.length === 0) { showToast('La cola está vacía', 'error'); return; }
+
+  const username = spinQueue.shift();
+  doSpin(username);
+}
+
+/* ============================================================
+   GIRO ALEATORIO
+   ============================================================ */
+function spinRandom() {
+  if (spinning) return;
+  if (prizes.length === 0) { showToast('Agrega premios primero', 'error'); return; }
+
+  let username;
+  if (spinQueue.length > 0) {
+    const idx = Math.floor(Math.random() * spinQueue.length);
+    username = spinQueue.splice(idx, 1)[0];
+  } else {
+    username = 'Streamer';
+  }
+  doSpin(username);
+}
+
+/* ============================================================
+   EJECUTAR GIRO
+   ============================================================ */
+function doSpin(username) {
+  spinning = true;
+  setSpinBtnsDisabled(true);
+
+  const winner       = pickPrize();
+  const totalRotation = calcRotation(winner);
+  const duration     = 4000 + Math.random() * 2000; // 4-6 segundos
+
+  animateSpin(totalRotation, duration, () => {
+    spinning = false;
+    setSpinBtnsDisabled(false);
+    applyPrize(username, winner);
+    renderQueue();
+  });
+
+  renderQueue();
+}
+
+function setSpinBtnsDisabled(disabled) {
+  document.getElementById('spinBtn').disabled       = disabled;
+  document.getElementById('centerSpinBtn').disabled = disabled;
+  document.getElementById('randomBtn').disabled     = disabled;
+  document.getElementById('spinBtnIcon').textContent = disabled ? '⏳' : '🎰';
+}
+
+/* ============================================================
+   APLICAR PREMIO AL JUGADOR
+   ============================================================ */
+function applyPrize(username, prize) {
+  if (!players[username]) {
+    players[username] = { points: 0, spins: 0 };
+  }
+  players[username].points += prize.points;
+  players[username].spins++;
+
+  saveLB();
+  showWinPopup(username, prize);
+  addHistoryEntry(username, prize);
+  renderLeaderboard();
+}
+
+/* ============================================================
+   POPUP DE GANADOR
+   ============================================================ */
+let winCloseTimer = null;
+
+function showWinPopup(username, prize) {
+  document.getElementById('winEmoji').textContent     = prize.emoji;
+  document.getElementById('winPrizeName').textContent = prize.name;
+  document.getElementById('winUsername').textContent  = '@' + username;
+
+  const ptsEl      = document.getElementById('winPts');
+  const ptsLabelEl = document.getElementById('winPtsLabel');
+  if (prize.points > 0) {
+    ptsEl.textContent      = '+' + prize.points;
+    ptsLabelEl.textContent = 'puntos ganados';
+    ptsEl.style.display    = 'block';
+    ptsLabelEl.style.display = 'block';
+  } else {
+    ptsEl.style.display    = 'none';
+    ptsLabelEl.style.display = 'none';
+  }
+
+  // Reiniciar barra de progreso
+  const barFill = document.getElementById('winBarFill');
+  barFill.style.animation = 'none';
+  void barFill.offsetHeight; // reflow
+  barFill.style.animation = 'shrinkBar 3.2s linear forwards';
+
+  document.getElementById('winOverlay').classList.add('show');
+  spawnConfetti();
+
+  if (winCloseTimer) clearTimeout(winCloseTimer);
+  winCloseTimer = setTimeout(closeWinPopup, 3400);
+}
+
+function closeWinPopup() {
+  document.getElementById('winOverlay').classList.remove('show');
+  if (winCloseTimer) { clearTimeout(winCloseTimer); winCloseTimer = null; }
+}
+
+/* ============================================================
+   CONFETTI
+   ============================================================ */
+function spawnConfetti() {
+  const colors = ['#ff2d55','#7c3aed','#fbbf24','#22c55e','#3b82f6','#ec4899','#f97316'];
+  for (let i = 0; i < 70; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.left              = Math.random() * 100 + 'vw';
+    el.style.top               = '-20px';
+    el.style.background        = colors[Math.floor(Math.random() * colors.length)];
+    el.style.width             = (6 + Math.random() * 8) + 'px';
+    el.style.height            = (6 + Math.random() * 8) + 'px';
+    el.style.animationDuration = (1.5 + Math.random() * 2.5) + 's';
+    el.style.animationDelay    = (Math.random() * 0.6) + 's';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 5000);
+  }
+}
+
+/* ============================================================
+   HISTORIAL
+   ============================================================ */
+const historyEntries = [];
+
+function addHistoryEntry(username, prize) {
+  historyEntries.unshift({ username, prize, time: Date.now() });
+  if (historyEntries.length > 20) historyEntries.pop();
+  renderHistory();
+}
+
+function renderHistory() {
+  const el = document.getElementById('historyList');
+  if (historyEntries.length === 0) {
+    el.innerHTML = '<span class="section-empty">Sin giros aún</span>';
+    return;
+  }
+  el.innerHTML = historyEntries.map(entry => {
+    const mins    = Math.floor((Date.now() - entry.time) / 60000);
+    const timeStr = mins < 1 ? 'ahora' : mins + 'm';
+    const ptsStr  = entry.prize.points > 0 ? `+${entry.prize.points} pts` : '0 pts';
+    return `
+      <div class="hist-item" style="border-left-color:${entry.prize.color}">
+        <span class="hist-emoji">${entry.prize.emoji}</span>
+        <div class="hist-info">
+          <span class="hist-user">@${escapeHtml(entry.username)}</span>
+          <span class="hist-prize"> → ${escapeHtml(entry.prize.name)}</span>
+          <span class="hist-pts"> ${ptsStr}</span>
+        </div>
+        <span class="hist-time">${timeStr}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+function clearHistory() {
+  historyEntries.length = 0;
+  renderHistory();
+}
+
+/* ============================================================
+   LEADERBOARD
+   ============================================================ */
+function renderLeaderboard() {
+  const el = document.getElementById('leaderboard');
+  const sorted = Object.entries(players)
+    .sort((a, b) => b[1].points - a[1].points)
+    .slice(0, 10);
+
+  if (sorted.length === 0) {
+    el.innerHTML = '<span class="section-empty">Sin jugadores aún</span>';
+    return;
+  }
+
+  el.innerHTML = sorted.map(([user, data], i) => {
+    const rank = i + 1;
+    const rankClass = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
+    const rankLabel = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
+    const initial   = user.charAt(0).toUpperCase();
+    return `
+      <div class="lb-row">
+        <span class="lb-rank ${rankClass}">${rankLabel}</span>
+        <div class="lb-avatar">${initial}</div>
+        <span class="lb-user">${escapeHtml(user)}</span>
+        <span class="lb-pts">${data.points} pts</span>
+        <span class="lb-spins">${data.spins}x</span>
+      </div>
+    `;
+  }).join('');
+}
+
+function clearLeaderboard() {
+  if (!confirm('¿Borrar el leaderboard completo?')) return;
+  players = {};
+  saveLB();
+  renderLeaderboard();
+  showToast('Leaderboard borrado', 'info');
+}
+
+/* ============================================================
+   COLA DE GIRO
+   ============================================================ */
+function renderQueue() {
+  const el = document.getElementById('queueChips');
+  document.getElementById('queueCount').textContent = spinQueue.length;
+
+  if (spinQueue.length === 0) {
+    el.innerHTML = '<span class="section-empty" style="width:100%">La cola está vacía</span>';
+    return;
+  }
+
+  el.innerHTML = spinQueue.map((user, i) => `
+    <div class="queue-chip ${i === 0 ? 'first' : ''}">
+      <span class="queue-chip-pos">${i + 1}</span>
+      ${escapeHtml(user)}
+    </div>
+  `).join('');
+}
+
+function clearQueue() {
+  spinQueue = [];
+  renderQueue();
+  showToast('Cola limpiada', 'info');
+}
+
+/* ============================================================
+   COOLDOWNS
+   ============================================================ */
+function startCooldown(username) {
+  if (cooldownSecs <= 0) return;
+  cooldowns[username] = Date.now() + cooldownSecs * 1000;
+  renderCooldowns();
+}
+
+function renderCooldowns() {
+  const el = document.getElementById('cooldownList');
+  const now = Date.now();
+  const active = Object.entries(cooldowns).filter(([, exp]) => exp > now);
+
+  if (active.length === 0) {
+    el.innerHTML = '<span class="section-empty">Sin cooldowns activos</span>';
+    return;
+  }
+
+  el.innerHTML = active.map(([user, exp]) => {
+    const remaining = Math.max(0, exp - now);
+    const pct = Math.min(100, (remaining / (cooldownSecs * 1000)) * 100);
+    const secs = Math.ceil(remaining / 1000);
+    return `
+      <div class="cooldown-item">
+        <div style="display:flex;justify-content:space-between;">
+          <span style="color:#a78bfa;font-weight:600;">@${escapeHtml(user)}</span>
+          <span style="color:var(--muted);">${secs}s</span>
+        </div>
+        <div class="cooldown-bar-track">
+          <div class="cooldown-bar-fill" style="width:${pct}%"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// Actualizar cooldowns cada segundo
+setInterval(() => {
+  const now = Date.now();
+  // Limpiar expirados
+  Object.keys(cooldowns).forEach(u => { if (cooldowns[u] <= now) delete cooldowns[u]; });
+  renderCooldowns();
+}, 1000);
+
+/* ============================================================
+   PREMIOS – RENDER Y GESTIÓN
+   ============================================================ */
+function renderPrizes() {
+  const el = document.getElementById('prizesList');
+  document.getElementById('prizesCount').textContent = prizes.length;
+
+  if (prizes.length === 0) {
+    el.innerHTML = '<span class="section-empty">Sin premios configurados</span>';
+    drawWheel();
+    return;
+  }
+
+  el.innerHTML = prizes.map(p => `
+    <div class="prize-item">
+      <div class="prize-color-dot" style="background:${p.color}"></div>
+      <span style="font-size:1.1rem;">${p.emoji}</span>
+      <div class="prize-info">
+        <div class="prize-name">${escapeHtml(p.name)}</div>
+        <div class="prize-meta">${p.points} pts · peso ${p.weight}</div>
+      </div>
+      <button class="prize-del" onclick="deletePrize(${p.id})" title="Eliminar">✕</button>
+    </div>
+  `).join('');
+
+  drawWheel();
+}
+
+function addPrize() {
+  const emoji  = document.getElementById('newEmoji').value.trim() || '🎁';
+  const name   = document.getElementById('newName').value.trim();
+  const points = parseInt(document.getElementById('newPoints').value) || 0;
+  const weight = parseInt(document.getElementById('newWeight').value) || 10;
+  const color  = document.getElementById('newColor').value;
+
+  if (!name) { showToast('Ingresa un nombre para el premio', 'error'); return; }
+
+  prizes.push({ id: prizeIdCounter++, emoji, name, points, color, weight });
+  renderPrizes();
+  showToast(`Premio "${name}" agregado`, 'success');
+
+  // Limpiar form
+  document.getElementById('newEmoji').value  = '';
+  document.getElementById('newName').value   = '';
+  document.getElementById('newPoints').value = '';
+  document.getElementById('newWeight').value = '';
+}
+
+function deletePrize(id) {
+  prizes = prizes.filter(p => p.id !== id);
+  renderPrizes();
+}
+
+function resetPrizes() {
+  prizes = JSON.parse(JSON.stringify(DEFAULT_PRIZES));
+  prizeIdCounter = 9;
+  renderPrizes();
+  showToast('Premios restablecidos', 'info');
+}
+
+/* ============================================================
+   CONFIGURACIÓN
+   ============================================================ */
+function applyConfig() {
+  cooldownSecs = parseInt(document.getElementById('cooldownSecs').value) || 0;
+  const newAutoSpin = parseInt(document.getElementById('autoSpinSecs').value) || 0;
+
+  if (newAutoSpin !== autoSpinSecs) {
+    autoSpinSecs = newAutoSpin;
+    clearInterval(autoSpinTimer);
+    if (autoSpinSecs > 0) {
+      autoSpinTimer = setInterval(() => {
+        if (!spinning && spinQueue.length > 0) spinNext();
+      }, autoSpinSecs * 1000);
+    }
+  }
+
+  showToast('Configuración aplicada', 'success');
+}
+
+/* ============================================================
+   CHAT EN VIVO (columna derecha)
+   ============================================================ */
+function addRpLiveMsg(data) {
+  const feed = document.getElementById('rpLiveFeed');
+  if (!feed) return;
+  const user    = escapeHtml(data.user || 'anon');
+  const text    = escapeHtml(data.comment || '');
+  const initial = user.charAt(0).toUpperCase();
+
+  const msg = document.createElement('div');
+  msg.className = 'live-msg';
+  msg.innerHTML = `
+    <div class="live-msg-avatar">${initial}</div>
+    <div><span class="live-msg-user">${user}:</span><span class="live-msg-text"> ${text}</span></div>
+  `;
+  feed.appendChild(msg);
+  while (feed.children.length > 80) feed.removeChild(feed.firstChild);
+  feed.scrollTop = feed.scrollHeight;
+}
+
+/* ============================================================
+   SOCKET EVENTS
+   ============================================================ */
+socket.on('chat-message', (data) => {
+  addRpLiveMsg(data);
+
+  const user    = data.user || '';
+  const comment = (data.comment || '').trim().toLowerCase();
+
+  if (comment === '!girar') {
+    // Verificar cooldown
+    if (cooldowns[user] && cooldowns[user] > Date.now()) {
+      const secs = Math.ceil((cooldowns[user] - Date.now()) / 1000);
+      // No spamear el chat, solo ignorar silenciosamente
+      return;
+    }
+    // Verificar si ya está en cola
+    if (spinQueue.includes(user)) return;
+
+    spinQueue.push(user);
+    startCooldown(user);
+    renderQueue();
+    showToast(`@${user} entró a la cola`, 'info');
+  }
+});
+
+socket.on('tiktok-status', (data) => {
+  document.querySelectorAll('.status-dot').forEach(d => {
+    d.classList.toggle('connected', data.connected);
+  });
+});
+
+/* ============================================================
+   INIT
+   ============================================================ */
+loadLB();
+renderPrizes();
+renderQueue();
+renderLeaderboard();
+renderCooldowns();
+drawWheel();
+</script>
+</body>
+</html>

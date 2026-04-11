@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yo Nunca... - StreamGames</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .nunca-card {
+      background: linear-gradient(135deg, rgba(255,45,85,0.15), rgba(124,58,237,0.15));
+      border: 2px solid rgba(255,45,85,0.4);
+      border-radius: 20px;
+      padding: 40px;
+      text-align: center;
+      min-height: 200px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+    .nunca-text {
+      font-size: 1.8rem;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+    .nunca-author { color: var(--pink); font-size: 0.9rem; }
+    .votes-bar {
+      display: flex;
+      gap: 16px;
+      margin-top: 16px;
+      width: 100%;
+    }
+    .vote-side {
+      flex: 1;
+      padding: 16px;
+      border-radius: 12px;
+      text-align: center;
+    }
+    .vote-si { background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.4); }
+    .vote-no { background: rgba(255,45,85,0.15); border: 1px solid rgba(255,45,85,0.4); }
+    .vote-count { font-size: 2.5rem; font-weight: 900; }
+    .vote-label { font-size: 0.85rem; color: var(--muted); margin-top: 4px; }
+    .vote-si .vote-count { color: #22c55e; }
+    .vote-no .vote-count { color: var(--pink); }
+    .queue-list { display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto; }
+    .queue-item {
+      background: rgba(255,255,255,0.04);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+    .queue-item .q-user { color: var(--pink); font-size: 0.75rem; flex-shrink: 0; }
+    .queue-item .q-text { flex: 1; }
+    .queue-item .use-btn {
+      background: rgba(255,45,85,0.2);
+      border: 1px solid var(--pink);
+      color: var(--pink);
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.75rem;
+      flex-shrink: 0;
+    }
+    .progress-bar {
+      height: 8px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #22c55e, var(--pink));
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+  </style>
+</head>
+<body class="gradient-bg">
+
+  <nav class="navbar">
+    <div class="logo">🎮 StreamGames</div>
+    <div class="connect-bar">
+      <span class="status-dot" id="statusDot"></span>
+      <input type="text" id="usernameInput" placeholder="@usuario de TikTok">
+      <button class="btn btn-primary" id="connectBtn" onclick="connectTikTok()">Conectar</button>
+      <button class="btn btn-danger" id="disconnectBtn" onclick="disconnectTikTok()" style="display:none">Desconectar</button>
+    </div>
+  </nav>
+
+  <div class="game-layout">
+    <div class="game-main">
+      <a href="../index.html" class="back-btn">← Volver al menú</a>
+
+      <div class="card">
+        <h2 style="margin-bottom:8px;">🙈 Yo Nunca...</h2>
+        <p style="color:var(--muted); font-size:0.9rem;">El chat propone con <strong style="color:var(--pink)">!nunca [frase]</strong> · Vota con <strong style="color:#22c55e">!si</strong> o <strong style="color:var(--pink)">!no</strong></p>
+      </div>
+
+      <!-- Frase actual -->
+      <div class="nunca-card" id="nuncaCard">
+        <div style="font-size:3rem;">🙈</div>
+        <div class="nunca-text" id="nuncaText">Esperando una frase del chat...</div>
+        <div class="nunca-author" id="nuncaAuthor"></div>
+      </div>
+
+      <!-- Votos -->
+      <div class="votes-bar">
+        <div class="vote-side vote-si">
+          <div class="vote-count" id="votesSi">0</div>
+          <div class="vote-label">Lo han hecho (!si)</div>
+          <div class="progress-bar"><div class="progress-fill" id="progressSi" style="width:50%"></div></div>
+        </div>
+        <div class="vote-side vote-no">
+          <div class="vote-count" id="votesNo">0</div>
+          <div class="vote-label">Nunca lo han hecho (!no)</div>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-primary" onclick="nextFrase()">Siguiente frase ▶</button>
+        <button class="btn btn-secondary" onclick="clearVotes()">Limpiar votos</button>
+      </div>
+    </div>
+
+    <div class="game-sidebar">
+      <div class="card">
+        <h4 style="margin-bottom:12px;">📋 Cola de frases (<span id="queueCount">0</span>)</h4>
+        <div class="queue-list" id="queueList">
+          <p style="color:var(--muted); font-size:0.85rem; text-align:center; padding:20px 0;">
+            El chat aún no ha propuesto frases
+          </p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h4 style="margin-bottom:12px;">💬 Chat en vivo</h4>
+        <div class="chat-feed" id="chatFeed"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="../shared.js"></script>
+  <script>
+    let queue = [];
+    let currentFrase = null;
+    let votesSi = 0;
+    let votesNo = 0;
+    let voters = new Set();
+
+    socket.on('chat-message', (data) => {
+      addChatMessage(data);
+      const msg = data.comment.trim().toLowerCase();
+
+      // Proponer frase
+      if (msg.startsWith('!nunca ')) {
+        const frase = data.comment.trim().substring(7).trim();
+        if (frase.length > 3) {
+          queue.push({ user: data.user, frase });
+          renderQueue();
+          if (!currentFrase) nextFrase();
+        }
+      }
+
+      // Votar
+      if (currentFrase && !voters.has(data.user)) {
+        if (msg === '!si') {
+          voters.add(data.user);
+          votesSi++;
+          updateVotes();
+        } else if (msg === '!no') {
+          voters.add(data.user);
+          votesNo++;
+          updateVotes();
+        }
+      }
+    });
+
+    function nextFrase() {
+      if (queue.length === 0) {
+        currentFrase = null;
+        document.getElementById('nuncaText').textContent = 'Esperando una frase del chat...';
+        document.getElementById('nuncaAuthor').textContent = '';
+        return;
+      }
+      currentFrase = queue.shift();
+      document.getElementById('nuncaText').textContent = 'Yo nunca... ' + currentFrase.frase;
+      document.getElementById('nuncaAuthor').textContent = 'Propuesto por @' + currentFrase.user;
+      clearVotes();
+      renderQueue();
+    }
+
+    function clearVotes() {
+      votesSi = 0; votesNo = 0; voters.clear();
+      updateVotes();
+    }
+
+    function updateVotes() {
+      document.getElementById('votesSi').textContent = votesSi;
+      document.getElementById('votesNo').textContent = votesNo;
+      const total = votesSi + votesNo || 1;
+      document.getElementById('progressSi').style.width = (votesSi / total * 100) + '%';
+    }
+
+    function renderQueue() {
+      const list = document.getElementById('queueList');
+      document.getElementById('queueCount').textContent = queue.length;
+      if (queue.length === 0) {
+        list.innerHTML = '<p style="color:var(--muted); font-size:0.85rem; text-align:center; padding:20px 0;">Cola vacía</p>';
+        return;
+      }
+      list.innerHTML = queue.map((item, i) => `
+        <div class="queue-item">
+          <span class="q-user">@${item.user}</span>
+          <span class="q-text">${escapeHtml(item.frase)}</span>
+          <button class="use-btn" onclick="useFromQueue(${i})">Usar</button>
+        </div>
+      `).join('');
+    }
+
+    function useFromQueue(index) {
+      const item = queue.splice(index, 1)[0];
+      queue.unshift(item);
+      nextFrase();
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trivia en Vivo - StreamGames</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .question-card {
+      background: linear-gradient(135deg, rgba(124,58,237,0.15), rgba(59,130,246,0.15));
+      border: 2px solid rgba(124,58,237,0.4);
+      border-radius: 20px;
+      padding: 32px;
+    }
+    .question-text { font-size: 1.5rem; font-weight: 700; margin-bottom: 24px; line-height: 1.4; }
+    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .option-btn {
+      padding: 16px;
+      border-radius: 12px;
+      border: 2px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .option-btn:hover { border-color: var(--purple); background: rgba(124,58,237,0.15); }
+    .option-btn.correct { border-color: #22c55e; background: rgba(34,197,94,0.2); }
+    .option-btn.wrong { border-color: var(--pink); background: rgba(255,45,85,0.2); }
+    .option-btn.selected { border-color: var(--purple); background: rgba(124,58,237,0.25); }
+    .option-letter {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.1);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900; flex-shrink: 0;
+    }
+    .vote-bar {
+      height: 6px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 3px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+    .vote-fill { height: 100%; background: var(--purple); border-radius: 3px; transition: width 0.4s; }
+    .vote-count-label { font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
+    .players-list { display: flex; flex-direction: column; gap: 8px; }
+    .player-row {
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(255,255,255,0.04);
+      border-radius: 10px; padding: 10px 14px;
+    }
+    .player-name { font-weight: 600; font-size: 0.9rem; }
+    .player-score {
+      background: linear-gradient(90deg, var(--pink), var(--purple));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      font-weight: 900; font-size: 1.1rem;
+    }
+    .timer-ring {
+      width: 60px; height: 60px;
+      border-radius: 50%;
+      border: 4px solid rgba(255,255,255,0.1);
+      border-top-color: var(--pink);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; font-weight: 900;
+      transition: border-color 0.3s;
+    }
+    .new-question-form { display: flex; flex-direction: column; gap: 10px; }
+    .new-question-form input, .new-question-form textarea {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-family: inherit;
+    }
+    .new-question-form textarea { resize: vertical; min-height: 60px; }
+    .options-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  </style>
+</head>
+<body class="gradient-bg">
+
+  <nav class="navbar">
+    <div class="logo">🎮 StreamGames</div>
+    <div class="connect-bar">
+      <span class="status-dot" id="statusDot"></span>
+      <input type="text" id="usernameInput" placeholder="@usuario de TikTok">
+      <button class="btn btn-primary" id="connectBtn" onclick="connectTikTok()">Conectar</button>
+      <button class="btn btn-danger" id="disconnectBtn" onclick="disconnectTikTok()" style="display:none">Desconectar</button>
+    </div>
+  </nav>
+
+  <div class="game-layout">
+    <div class="game-main">
+      <a href="../index.html" class="back-btn">← Volver al menú</a>
+
+      <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <h2 style="margin-bottom:4px;">🧠 Trivia en Vivo</h2>
+          <p style="color:var(--muted); font-size:0.9rem;">Chat vota con <strong style="color:var(--pink)">A B C D</strong> · Pregunta <span id="qNum">0</span></p>
+        </div>
+        <div class="timer-ring" id="timerRing">–</div>
+      </div>
+
+      <!-- Pregunta actual -->
+      <div class="question-card" id="questionCard">
+        <div class="question-text" id="questionText">Crea una pregunta para empezar 👇</div>
+        <div class="options-grid" id="optionsGrid"></div>
+      </div>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="revealAnswer()">✅ Revelar respuesta</button>
+        <button class="btn btn-secondary" onclick="nextQuestion()">Siguiente ▶</button>
+        <button class="btn btn-secondary" onclick="toggleForm()">+ Nueva pregunta</button>
+      </div>
+
+      <!-- Formulario nueva pregunta -->
+      <div class="card" id="newQuestionForm" style="display:none;">
+        <h4 style="margin-bottom:12px;">Nueva pregunta</h4>
+        <div class="new-question-form">
+          <textarea id="qText" placeholder="Escribe la pregunta..."></textarea>
+          <div class="options-inputs">
+            <input id="optA" placeholder="A) Opción A">
+            <input id="optB" placeholder="B) Opción B">
+            <input id="optC" placeholder="C) Opción C">
+            <input id="optD" placeholder="D) Opción D">
+          </div>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <span style="color:var(--muted); font-size:0.9rem;">Respuesta correcta:</span>
+            <select id="correctOpt" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:var(--text); padding:8px 12px; border-radius:8px;">
+              <option value="0">A</option>
+              <option value="1">B</option>
+              <option value="2">C</option>
+              <option value="3">D</option>
+            </select>
+            <button class="btn btn-primary" onclick="addQuestion()">Agregar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="game-sidebar">
+      <div class="card">
+        <h4 style="margin-bottom:12px;">🏆 Jugadores</h4>
+        <div class="players-list" id="playersList">
+          <p style="color:var(--muted); font-size:0.85rem; text-align:center; padding:10px 0;">Sin jugadores aún</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h4 style="margin-bottom:12px;">💬 Chat en vivo</h4>
+        <div class="chat-feed" id="chatFeed"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="../shared.js"></script>
+  <script>
+    const LETTERS = ['A','B','C','D'];
+    let questions = [
+      { text: '¿Cuál es el planeta más grande del sistema solar?', options: ['Saturno','Júpiter','Neptuno','Urano'], correct: 1 },
+      { text: '¿En qué año llegó el hombre a la Luna?', options: ['1965','1972','1969','1971'], correct: 2 },
+      { text: '¿Cuántos lados tiene un hexágono?', options: ['5','7','8','6'], correct: 3 },
+    ];
+    let currentQ = -1;
+    let votes = [0,0,0,0];
+    let voters = new Set();
+    let players = {};
+    let revealed = false;
+    let timer = null;
+    let timeLeft = 0;
+
+    socket.on('chat-message', (data) => {
+      addChatMessage(data);
+      const msg = data.comment.trim().toUpperCase();
+      if (['A','B','C','D'].includes(msg) && currentQ >= 0 && !revealed && !voters.has(data.user)) {
+        const idx = LETTERS.indexOf(msg);
+        voters.add(data.user);
+        votes[idx]++;
+        if (!players[data.user]) players[data.user] = 0;
+        updateOptions();
+      }
+    });
+
+    function loadQuestion() {
+      if (currentQ < 0 || currentQ >= questions.length) return;
+      const q = questions[currentQ];
+      revealed = false;
+      votes = [0,0,0,0];
+      voters.clear();
+      document.getElementById('questionText').textContent = q.text;
+      document.getElementById('qNum').textContent = `${currentQ + 1}/${questions.length}`;
+      renderOptions(q);
+      startTimer(30);
+    }
+
+    function renderOptions(q) {
+      const grid = document.getElementById('optionsGrid');
+      grid.innerHTML = q.options.map((opt, i) => `
+        <div class="option-btn" id="opt${i}">
+          <div class="option-letter">${LETTERS[i]}</div>
+          <div style="flex:1">
+            <div>${escapeHtml(opt)}</div>
+            <div class="vote-bar"><div class="vote-fill" id="fill${i}" style="width:0%"></div></div>
+            <div class="vote-count-label" id="vcount${i}">0 votos</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function updateOptions() {
+      const total = votes.reduce((a,b) => a+b, 0) || 1;
+      votes.forEach((v, i) => {
+        const fill = document.getElementById('fill' + i);
+        const label = document.getElementById('vcount' + i);
+        if (fill) fill.style.width = (v / total * 100) + '%';
+        if (label) label.textContent = v + ' votos';
+      });
+    }
+
+    function revealAnswer() {
+      if (currentQ < 0 || revealed) return;
+      revealed = true;
+      stopTimer();
+      const q = questions[currentQ];
+      const correctIdx = q.correct;
+
+      // Dar puntos a quienes votaron correcto
+      voters.forEach(user => {
+        // No podemos saber qué votó cada uno individualmente aquí, solo contamos
+      });
+
+      q.options.forEach((_, i) => {
+        const btn = document.getElementById('opt' + i);
+        if (btn) btn.classList.add(i === correctIdx ? 'correct' : 'wrong');
+      });
+    }
+
+    function nextQuestion() {
+      currentQ++;
+      if (currentQ >= questions.length) {
+        showToast('¡Se acabaron las preguntas!', 'success');
+        currentQ = questions.length - 1;
+        return;
+      }
+      loadQuestion();
+    }
+
+    function startTimer(seconds) {
+      stopTimer();
+      timeLeft = seconds;
+      const ring = document.getElementById('timerRing');
+      ring.style.borderTopColor = '#22c55e';
+      ring.textContent = timeLeft;
+      timer = setInterval(() => {
+        timeLeft--;
+        ring.textContent = timeLeft;
+        if (timeLeft <= 10) ring.style.borderTopColor = 'var(--pink)';
+        if (timeLeft <= 0) { stopTimer(); revealAnswer(); }
+      }, 1000);
+    }
+
+    function stopTimer() {
+      if (timer) { clearInterval(timer); timer = null; }
+      document.getElementById('timerRing').textContent = '–';
+    }
+
+    function toggleForm() {
+      const form = document.getElementById('newQuestionForm');
+      form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function addQuestion() {
+      const text = document.getElementById('qText').value.trim();
+      const opts = [
+        document.getElementById('optA').value.trim(),
+        document.getElementById('optB').value.trim(),
+        document.getElementById('optC').value.trim(),
+        document.getElementById('optD').value.trim(),
+      ];
+      const correct = parseInt(document.getElementById('correctOpt').value);
+      if (!text || opts.some(o => !o)) return showToast('Completa todos los campos', 'error');
+      questions.push({ text, options: opts, correct });
+      showToast('Pregunta agregada', 'success');
+      document.getElementById('qText').value = '';
+      ['optA','optB','optC','optD'].forEach(id => document.getElementById(id).value = '');
+      if (currentQ < 0) { currentQ = 0; loadQuestion(); }
+    }
+
+    // Iniciar con primera pregunta
+    currentQ = 0;
+    loadQuestion();
+  </script>
+</body>
+</html>
