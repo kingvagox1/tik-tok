@@ -1,186 +1,167 @@
 /* ============================================================
-   StreamGames – Draggable Panels
-   Hace que los paneles flotantes se puedan arrastrar
+   StreamGames – Draggable Panels v2
+   Paneles arrastrables que nunca se salen de la pantalla
    ============================================================ */
 
-/**
- * Hace un panel arrastrable agarrándolo por su header.
- * @param {HTMLElement} panel  - El panel completo
- * @param {HTMLElement} handle - El header por donde se arrastra
- */
-function makeDraggable(panel, handle) {
-  if (!panel || !handle) return;
+// IDs de paneles y sus posiciones por defecto
+const PANEL_DEFAULTS = {
+  'chatPanel':    { right: 24, bottom: 24 },
+  '_chatPanel':   { left:  24, bottom: 24 },
+  '_creditPanel': { right: 24, top:    80 },
+  '_donPanel':    { right: 24, bottom: 24 },
+};
 
-  let startX, startY, startLeft, startTop;
-  let isDragging = false;
+const _draggableInited = new Set();
 
-  // Asegurar que el panel tenga posición fija y coordenadas iniciales
-  function initPosition() {
-    if (panel.style.position !== 'fixed') return;
-    // Si no tiene left/top explícitos, calcularlos desde getBoundingClientRect
-    if (!panel.style.left || panel.style.left === '') {
-      const rect = panel.getBoundingClientRect();
-      panel.style.left   = rect.left + 'px';
-      panel.style.top    = rect.top  + 'px';
-      panel.style.right  = 'auto';
-      panel.style.bottom = 'auto';
-    }
+function _drag(panel) {
+  if (!panel || _draggableInited.has(panel.id)) return;
+  _draggableInited.add(panel.id);
+
+  // El handle es el primer div hijo (header)
+  const handle = panel.firstElementChild;
+  if (!handle) return;
+
+  handle.style.cursor = 'grab';
+
+  let ox = 0, oy = 0, dragging = false;
+
+  function getPos() {
+    const r = panel.getBoundingClientRect();
+    return { left: r.left, top: r.top };
   }
 
-  handle.addEventListener('mousedown', onMouseDown);
-  handle.addEventListener('touchstart', onTouchStart, { passive: false });
-
-  function onMouseDown(e) {
-    if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' ||
-        e.target.tagName === 'SELECT' || e.target.closest('button')) return;
-    e.preventDefault();
-    initPosition();
-    startX    = e.clientX;
-    startY    = e.clientY;
-    startLeft = parseInt(panel.style.left) || 0;
-    startTop  = parseInt(panel.style.top)  || 0;
-    isDragging = true;
-    panel.style.transition = 'none';
-    panel.style.zIndex = '10000';
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup',   onMouseUp);
+  function clamp(val, min, max) {
+    return Math.max(min, Math.min(max, val));
   }
 
-  function onTouchStart(e) {
-    if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
-    const touch = e.touches[0];
-    initPosition();
-    startX    = touch.clientX;
-    startY    = touch.clientY;
-    startLeft = parseInt(panel.style.left) || 0;
-    startTop  = parseInt(panel.style.top)  || 0;
-    isDragging = true;
-    panel.style.transition = 'none';
-    panel.style.zIndex = '10000';
-    document.addEventListener('touchmove', onTouchMove, { passive: false });
-    document.addEventListener('touchend',  onTouchEnd);
-  }
-
-  function onMouseMove(e) {
-    if (!isDragging) return;
-    move(e.clientX - startX, e.clientY - startY);
-  }
-
-  function onTouchMove(e) {
-    if (!isDragging) return;
-    e.preventDefault();
-    const touch = e.touches[0];
-    move(touch.clientX - startX, touch.clientY - startY);
-  }
-
-  function move(dx, dy) {
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    const pw = panel.offsetWidth;
-    const ph = panel.offsetHeight;
-
-    let newLeft = startLeft + dx;
-    let newTop  = startTop  + dy;
-
-    // Mantener dentro de la pantalla
-    newLeft = Math.max(0, Math.min(newLeft, vw - pw));
-    newTop  = Math.max(0, Math.min(newTop,  vh - ph));
-
-    panel.style.left = newLeft + 'px';
-    panel.style.top  = newTop  + 'px';
-  }
-
-  function onMouseUp() {
-    isDragging = false;
-    panel.style.transition = '';
-    document.removeEventListener('mousemove', onMouseMove);
-    document.removeEventListener('mouseup',   onMouseUp);
-    savePosition(panel);
-  }
-
-  function onTouchEnd() {
-    isDragging = false;
-    panel.style.transition = '';
-    document.removeEventListener('touchmove', onTouchMove);
-    document.removeEventListener('touchend',  onTouchEnd);
-    savePosition(panel);
-  }
-}
-
-/* ── Guardar y restaurar posiciones en localStorage ── */
-function savePosition(panel) {
-  if (!panel.id) return;
-  const pos = { left: panel.style.left, top: panel.style.top };
-  localStorage.setItem('panel-pos-' + panel.id, JSON.stringify(pos));
-}
-
-function restorePosition(panel) {
-  if (!panel.id) return;
-  try {
-    const saved = localStorage.getItem('panel-pos-' + panel.id);
-    if (!saved) return;
-    const pos = JSON.parse(saved);
+  function applyPos(left, top) {
     const vw = window.innerWidth;
     const vh = window.innerHeight;
     const pw = panel.offsetWidth  || 300;
-    const ph = panel.offsetHeight || 200;
-    const left = Math.max(0, Math.min(parseInt(pos.left), vw - pw));
-    const top  = Math.max(0, Math.min(parseInt(pos.top),  vh - ph));
-    panel.style.left   = left + 'px';
-    panel.style.top    = top  + 'px';
+    const ph = panel.offsetHeight || 100;
+    const l  = clamp(left, 0, vw - pw);
+    const t  = clamp(top,  0, vh - ph);
+    panel.style.left   = l + 'px';
+    panel.style.top    = t + 'px';
     panel.style.right  = 'auto';
     panel.style.bottom = 'auto';
+    panel.style.position = 'fixed';
+  }
+
+  function start(cx, cy) {
+    const pos = getPos();
+    ox = cx - pos.left;
+    oy = cy - pos.top;
+    dragging = true;
+    handle.style.cursor = 'grabbing';
+    panel.style.transition = 'none';
+    panel.style.zIndex = '10001';
+  }
+
+  function moveTo(cx, cy) {
+    if (!dragging) return;
+    applyPos(cx - ox, cy - oy);
+  }
+
+  function end() {
+    if (!dragging) return;
+    dragging = false;
+    handle.style.cursor = 'grab';
+    panel.style.transition = '';
+    // Guardar posición
+    if (panel.id) {
+      localStorage.setItem('sg-panel-' + panel.id, JSON.stringify({
+        left: panel.style.left, top: panel.style.top
+      }));
+    }
+  }
+
+  // Mouse
+  handle.addEventListener('mousedown', (e) => {
+    if (e.target.closest('button,input,select,a')) return;
+    e.preventDefault();
+    start(e.clientX, e.clientY);
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup',   onUp);
+  });
+
+  function onMove(e) { moveTo(e.clientX, e.clientY); }
+  function onUp()    { end(); document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); }
+
+  // Touch
+  handle.addEventListener('touchstart', (e) => {
+    if (e.target.closest('button,input,select,a')) return;
+    const t = e.touches[0];
+    start(t.clientX, t.clientY);
+    document.addEventListener('touchmove', onTMove, { passive: false });
+    document.addEventListener('touchend',  onTUp);
+  }, { passive: true });
+
+  function onTMove(e) { e.preventDefault(); const t = e.touches[0]; moveTo(t.clientX, t.clientY); }
+  function onTUp()    { end(); document.removeEventListener('touchmove', onTMove); document.removeEventListener('touchend', onTUp); }
+}
+
+function _restoreOrDefault(panel) {
+  if (!panel) return;
+  const id = panel.id;
+
+  // Intentar restaurar posición guardada
+  try {
+    const saved = localStorage.getItem('sg-panel-' + id);
+    if (saved) {
+      const pos = JSON.parse(saved);
+      const left = parseInt(pos.left) || 0;
+      const top  = parseInt(pos.top)  || 0;
+      const vw   = window.innerWidth;
+      const vh   = window.innerHeight;
+      // Validar que esté dentro de la pantalla
+      if (left >= 0 && top >= 0 && left < vw - 50 && top < vh - 50) {
+        panel.style.left   = Math.min(left, vw - (panel.offsetWidth  || 300)) + 'px';
+        panel.style.top    = Math.min(top,  vh - (panel.offsetHeight || 100)) + 'px';
+        panel.style.right  = 'auto';
+        panel.style.bottom = 'auto';
+        panel.style.position = 'fixed';
+        return;
+      }
+    }
   } catch (_) {}
+
+  // Limpiar posición guardada inválida
+  localStorage.removeItem('sg-panel-' + id);
 }
 
-/* ── Inicializar todos los paneles cuando el DOM esté listo ── */
-function initDraggablePanels() {
-  // Panel de chat (index.html)
-  const chatPanel = document.getElementById('chatPanel');
-  if (chatPanel) {
-    const chatHeader = chatPanel.querySelector('.chat-panel-header');
-    restorePosition(chatPanel);
-    makeDraggable(chatPanel, chatHeader);
-  }
-
-  // Panel TTS de juegos (_chatPanel)
-  const ttsPanel = document.getElementById('_chatPanel');
-  if (ttsPanel) {
-    const ttsHeader = ttsPanel.querySelector('div');
-    restorePosition(ttsPanel);
-    makeDraggable(ttsPanel, ttsHeader);
-  }
-
-  // Panel de créditos (_creditPanel)
-  const creditPanel = document.getElementById('_creditPanel');
-  if (creditPanel) {
-    const creditHeader = creditPanel.querySelector('div');
-    restorePosition(creditPanel);
-    makeDraggable(creditPanel, creditHeader);
-  }
-
-  // Panel de donaciones (_donPanel)
-  const donPanel = document.getElementById('_donPanel');
-  if (donPanel) {
-    const donHeader = donPanel.querySelector('div');
-    restorePosition(donPanel);
-    makeDraggable(donPanel, donHeader);
-  }
+function _initAll() {
+  Object.keys(PANEL_DEFAULTS).forEach(id => {
+    const panel = document.getElementById(id);
+    if (!panel) return;
+    _restoreOrDefault(panel);
+    _drag(panel);
+  });
 }
 
-/* ── Observar cuando los paneles se crean dinámicamente ── */
-const _dragObserver = new MutationObserver(() => {
-  initDraggablePanels();
-});
+// Observar creación dinámica de paneles
+new MutationObserver(_initAll).observe(document.body, { childList: true });
 
-_dragObserver.observe(document.body, { childList: true, subtree: false });
-
-// También inicializar cuando el DOM esté listo
+// Inicializar
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initDraggablePanels);
+  document.addEventListener('DOMContentLoaded', _initAll);
 } else {
-  initDraggablePanels();
-  // Reintentar después de que los paneles dinámicos se creen
-  setTimeout(initDraggablePanels, 500);
-  setTimeout(initDraggablePanels, 1500);
+  _initAll();
+  setTimeout(_initAll, 400);
+  setTimeout(_initAll, 1200);
 }
+
+// Reset de emergencia
+window.resetPanels = function() {
+  Object.keys(PANEL_DEFAULTS).forEach(id => {
+    localStorage.removeItem('sg-panel-' + id);
+    const el = document.getElementById(id);
+    if (!el) return;
+    const def = PANEL_DEFAULTS[id];
+    el.style.left   = def.left   != null ? def.left   + 'px' : '';
+    el.style.top    = def.top    != null ? def.top    + 'px' : '';
+    el.style.right  = def.right  != null ? def.right  + 'px' : '';
+    el.style.bottom = def.bottom != null ? def.bottom + 'px' : '';
+  });
+  location.reload();
+};
