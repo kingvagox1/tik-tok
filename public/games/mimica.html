@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+﻿?<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MÃ­mica - StreamGames</title>
+  <title>Mímica - StreamGames</title>
   <link rel="stylesheet" href="../style.css">
   <style>
     .mimica-word {
@@ -82,7 +82,7 @@
 </head>
 <body class="gradient-bg">
   <nav class="navbar">
-    <div class="logo">ðŸŽ® StreamGames</div>
+    <div class="logo">🎮 StreamGames</div>
     <div class="connect-bar">
       <span class="status-dot" id="statusDot"></span>
       <input type="text" id="usernameInput" placeholder="@usuario de TikTok">
@@ -93,15 +93,15 @@
 
   <div class="game-layout">
     <div class="game-main">
-      <a href="../index.html" class="back-btn">â† Volver al menÃº</a>
+      <a href="../index.html" class="back-btn">← Volver al menú</a>
       <div class="card">
-        <h2 style="margin-bottom:8px;">ðŸŽ­ MÃ­mica</h2>
-        <p style="color:var(--muted); font-size:0.9rem;">ActÃºa la palabra sin hablar. El chat escribe su respuesta para adivinar.</p>
+        <h2 style="margin-bottom:8px;">🎭 Mímica</h2>
+        <p style="color:var(--muted); font-size:0.9rem;">Actúa la palabra sin hablar. El chat escribe su respuesta para adivinar.</p>
       </div>
 
       <!-- Palabra oculta / visible -->
       <div id="wordHidden" class="mimica-hidden" onclick="revealWord()">
-        ðŸ‘† Toca para ver tu palabra
+        👆 Toca para ver tu palabra
       </div>
       <div id="wordVisible" class="mimica-word" style="display:none;">???</div>
 
@@ -116,30 +116,30 @@
 
       <!-- Ganador -->
       <div class="correct-banner" id="correctBanner">
-        <div style="font-size:2rem;">ðŸŽ‰</div>
+        <div style="font-size:2rem;">🎉</div>
         <div style="font-size:1.4rem; font-weight:700; color:#22c55e;" id="correctUser"></div>
-        <div style="color:var(--muted); margin-top:4px;">Â¡AdivinÃ³ la palabra!</div>
+        <div style="color:var(--muted); margin-top:4px;">¡Adivinó la palabra!</div>
       </div>
 
-      <!-- CategorÃ­as -->
+      <!-- Categorías -->
       <div class="card">
-        <h4 style="margin-bottom:12px;">CategorÃ­a</h4>
+        <h4 style="margin-bottom:12px;">Categoría</h4>
         <div class="category-chips" id="catChips"></div>
       </div>
 
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
-        <button class="btn btn-primary" onclick="nextWord()">â–¶ Nueva palabra</button>
-        <button class="btn btn-secondary" onclick="startTimer()">â± Reiniciar timer</button>
+        <button class="btn btn-primary" onclick="nextWord()">▶ Nueva palabra</button>
+        <button class="btn btn-secondary" onclick="startTimer()">⏱ Reiniciar timer</button>
       </div>
     </div>
 
     <div class="game-sidebar">
       <div class="card">
-        <h4 style="margin-bottom:12px;">ðŸ’¬ Intentos del chat</h4>
+        <h4 style="margin-bottom:12px;">💬 Intentos del chat</h4>
         <div class="chat-feed" id="guessFeed" style="height:250px;"></div>
       </div>
       <div class="card">
-        <h4 style="margin-bottom:12px;">ðŸ’¬ Chat en vivo</h4>
+        <h4 style="margin-bottom:12px;">💬 Chat en vivo</h4>
         <div class="chat-feed" id="chatFeed"></div>
       </div>
     </div>
@@ -149,11 +149,11 @@
   <script src="../shared.js"></script><script src="../tts.js"></script><script src="../donations.js"></script><script src="../credits-panel.js"></script>
   <script>
     const WORDS = {
-      'ðŸ¾ Animales': ['Elefante','PingÃ¼ino','Cocodrilo','Mariposa','Pulpo','Canguro','Flamenco','Tortuga','MurciÃ©lago','DelfÃ­n'],
-      'ðŸŽ¬ PelÃ­culas': ['Titanic','Matrix','Avatar','Frozen','Coco','Shrek','Toy Story','Batman','Spiderman','Moana'],
-      'ðŸ• Comida': ['Pizza','Sushi','Hamburguesa','Tacos','Helado','Espagueti','SÃ¡ndwich','Churros','Paella','Ramen'],
-      'âš½ Deportes': ['FÃºtbol','NataciÃ³n','Boxeo','Tenis','Skateboard','Surf','Gimnasia','Ciclismo','Golf','Karate'],
-      'ðŸŽ­ Acciones': ['Bailar','Dormir','Cocinar','Conducir','Nadar','Volar','Llorar','ReÃ­r','Correr','Cantar'],
+      '🐾 Animales': ['Elefante','Pingüino','Cocodrilo','Mariposa','Pulpo','Canguro','Flamenco','Tortuga','Murciélago','Delfín'],
+      '🎬 Películas': ['Titanic','Matrix','Avatar','Frozen','Coco','Shrek','Toy Story','Batman','Spiderman','Moana'],
+      '🍕 Comida': ['Pizza','Sushi','Hamburguesa','Tacos','Helado','Espagueti','Sándwich','Churros','Paella','Ramen'],
+      '⚽ Deportes': ['Fútbol','Natación','Boxeo','Tenis','Skateboard','Surf','Gimnasia','Ciclismo','Golf','Karate'],
+      '🎭 Acciones': ['Bailar','Dormir','Cocinar','Conducir','Nadar','Volar','Llorar','Reír','Correr','Cantar'],
     };
     let categories = Object.keys(WORDS);
     let activeCategories = new Set(categories);
@@ -178,7 +178,7 @@
 
     function getRandomWord() {
       const active = categories.filter(c => activeCategories.has(c));
-      if (!active.length) return 'Activa al menos una categorÃ­a';
+      if (!active.length) return 'Activa al menos una categoría';
       const cat = active[Math.floor(Math.random() * active.length)];
       const words = WORDS[cat];
       return words[Math.floor(Math.random() * words.length)];
@@ -231,12 +231,12 @@
       feed.appendChild(el);
       feed.scrollTop = feed.scrollHeight;
 
-      // Verificar si adivinÃ³
+      // Verificar si adivinó
       if (guess.toLowerCase().trim() === currentWord.toLowerCase()) {
         if (timer) { clearInterval(timer); timer = null; }
-        document.getElementById('correctUser').textContent = '@' + data.user + ' adivinÃ³: ' + currentWord;
+        document.getElementById('correctUser').textContent = '@' + data.user + ' adivinó: ' + currentWord;
         document.getElementById('correctBanner').classList.add('show');
-        showToast('ðŸŽ‰ @' + data.user + ' adivinÃ³!', 'success');
+        showToast('🎉 @' + data.user + ' adivinó!', 'success');
       }
     });
 

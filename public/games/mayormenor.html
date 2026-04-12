@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+﻿?<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -96,7 +96,7 @@
 </head>
 <body class="gradient-bg">
   <nav class="navbar">
-    <div class="logo">ðŸŽ® StreamGames</div>
+    <div class="logo">🎮 StreamGames</div>
     <div class="connect-bar">
       <span class="status-dot" id="statusDot"></span>
       <input type="text" id="usernameInput" placeholder="@usuario de TikTok">
@@ -107,13 +107,13 @@
 
   <div class="game-layout">
     <div class="game-main">
-      <a href="../index.html" class="back-btn">â† Volver al menÃº</a>
+      <a href="../index.html" class="back-btn">← Volver al menú</a>
       <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
         <div>
-          <h2 style="margin-bottom:4px;">ðŸƒ Mayor o Menor</h2>
+          <h2 style="margin-bottom:4px;">🃏 Mayor o Menor</h2>
           <p style="color:var(--muted); font-size:0.9rem;">Chat vota con <strong style="color:#22c55e">!mayor</strong> o <strong style="color:var(--pink)">!menor</strong></p>
         </div>
-        <div class="streak-badge">ðŸ”¥ Racha: <span id="streak">0</span></div>
+        <div class="streak-badge">🔥 Racha: <span id="streak">0</span></div>
       </div>
 
       <!-- Cartas -->
@@ -125,9 +125,9 @@
             <div class="suit" id="ccSuit"></div>
             <div class="corner br" id="ccBR"></div>
           </div>
-          <div class="arrow-badge">â†’</div>
+          <div class="arrow-badge">→</div>
           <div class="playing-card hidden" id="nextCard">
-            <div>ðŸ‚ </div>
+            <div>🂠</div>
             <div style="font-size:0.8rem; margin-top:8px; color:rgba(255,255,255,0.3);">?</div>
           </div>
         </div>
@@ -137,12 +137,12 @@
       <div class="vote-buttons">
         <div class="vote-btn vote-mayor">
           <span class="vote-count" id="vMayor">0</span>
-          â¬†ï¸ Mayor (!mayor)
+          ⬆️ Mayor (!mayor)
           <div class="vote-label" id="pctMayor">0%</div>
         </div>
         <div class="vote-btn vote-menor">
           <span class="vote-count" id="vMenor">0</span>
-          â¬‡ï¸ Menor (!menor)
+          ⬇️ Menor (!menor)
           <div class="vote-label" id="pctMenor">0%</div>
         </div>
       </div>
@@ -154,26 +154,26 @@
       </div>
 
       <div style="display:flex; gap:10px;">
-        <button class="btn btn-primary" id="revealBtn" onclick="revealNext()">ðŸ‘ Revelar carta</button>
-        <button class="btn btn-secondary" onclick="nextRound()">â–¶ Siguiente</button>
-        <button class="btn btn-secondary" onclick="resetDeck()">ðŸ”„ Nueva baraja</button>
+        <button class="btn btn-primary" id="revealBtn" onclick="revealNext()">👁 Revelar carta</button>
+        <button class="btn btn-secondary" onclick="nextRound()">▶ Siguiente</button>
+        <button class="btn btn-secondary" onclick="resetDeck()">🔄 Nueva baraja</button>
       </div>
     </div>
 
     <div class="game-sidebar">
       <div class="card">
-        <h4 style="margin-bottom:12px;">ðŸ“Š EstadÃ­sticas</h4>
+        <h4 style="margin-bottom:12px;">📊 Estadísticas</h4>
         <div style="display:flex; flex-direction:column; gap:8px;">
           <div style="display:flex; justify-content:space-between; font-size:0.9rem;">
             <span style="color:var(--muted);">Rondas jugadas</span>
             <span id="rounds">0</span>
           </div>
           <div style="display:flex; justify-content:space-between; font-size:0.9rem;">
-            <span style="color:var(--muted);">Chat acertÃ³</span>
+            <span style="color:var(--muted);">Chat acertó</span>
             <span style="color:#22c55e;" id="wins">0</span>
           </div>
           <div style="display:flex; justify-content:space-between; font-size:0.9rem;">
-            <span style="color:var(--muted);">Chat fallÃ³</span>
+            <span style="color:var(--muted);">Chat falló</span>
             <span style="color:var(--pink);" id="losses">0</span>
           </div>
           <div style="display:flex; justify-content:space-between; font-size:0.9rem;">
@@ -183,7 +183,7 @@
         </div>
       </div>
       <div class="card">
-        <h4 style="margin-bottom:12px;">ðŸ’¬ Chat en vivo</h4>
+        <h4 style="margin-bottom:12px;">💬 Chat en vivo</h4>
         <div class="chat-feed" id="chatFeed"></div>
       </div>
     </div>
@@ -192,9 +192,9 @@
   <script src="/socket.io/socket.io.js"></script>
   <script src="../shared.js"></script><script src="../tts.js"></script><script src="../donations.js"></script><script src="../credits-panel.js"></script>
   <script>
-    const SUITS = ['â™¥','â™¦','â™£','â™ '];
+    const SUITS = ['♥','♦','♣','♠'];
     const VALUES = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
-    const RED_SUITS = new Set(['â™¥','â™¦']);
+    const RED_SUITS = new Set(['♥','♦']);
 
     let deck = [];
     let currentCard = null;
@@ -246,7 +246,7 @@
       revealed = false;
       showCard(currentCard, 'currentCard');
       document.getElementById('nextCard').className = 'playing-card hidden';
-      document.getElementById('nextCard').innerHTML = '<div>ðŸ‚ </div><div style="font-size:0.8rem; margin-top:8px; color:rgba(255,255,255,0.3);">?</div>';
+      document.getElementById('nextCard').innerHTML = '<div>🂠</div><div style="font-size:0.8rem; margin-top:8px; color:rgba(255,255,255,0.3);">?</div>';
       document.getElementById('resultCard').classList.remove('show');
       updateVotes();
     }
@@ -269,7 +269,7 @@
         win = (chatVotedMayor && actuallyMayor) || (!chatVotedMayor && actuallyMenor);
       }
 
-      // Créditos: ganadores y perdedores
+      // Cr�ditos: ganadores y perdedores
       if (!tie) {
         const correctVote = actuallyMayor ? 'mayor' : 'menor';
         const winners = Object.entries(voterChoices).filter(([,v]) => v === correctVote).map(([u]) => u);
@@ -284,18 +284,18 @@
         result.className = 'result-card show';
         result.style.background = 'rgba(245,158,11,0.15)';
         result.style.border = '2px solid #f59e0b';
-        document.getElementById('resultEmoji').textContent = 'ðŸ¤';
-        document.getElementById('resultText').textContent = `Â¡Empate! La carta era ${nextCardVal.v}${nextCardVal.s}`;
+        document.getElementById('resultEmoji').textContent = '🤝';
+        document.getElementById('resultText').textContent = `¡Empate! La carta era ${nextCardVal.v}${nextCardVal.s}`;
       } else if (win) {
         result.className = 'result-card win show';
-        document.getElementById('resultEmoji').textContent = 'ðŸŽ‰';
-        document.getElementById('resultText').textContent = `Â¡El chat acertÃ³! Era ${actuallyMayor ? 'mayor' : 'menor'} (${nextCardVal.v}${nextCardVal.s})`;
+        document.getElementById('resultEmoji').textContent = '🎉';
+        document.getElementById('resultText').textContent = `¡El chat acertó! Era ${actuallyMayor ? 'mayor' : 'menor'} (${nextCardVal.v}${nextCardVal.s})`;
         streak++; wins++;
         if (streak > bestStreak) bestStreak = streak;
       } else {
         result.className = 'result-card lose show';
-        document.getElementById('resultEmoji').textContent = 'ðŸ˜¬';
-        document.getElementById('resultText').textContent = `Â¡El chat fallÃ³! Era ${actuallyMayor ? 'mayor' : 'menor'} (${nextCardVal.v}${nextCardVal.s})`;
+        document.getElementById('resultEmoji').textContent = '😬';
+        document.getElementById('resultText').textContent = `¡El chat falló! Era ${actuallyMayor ? 'mayor' : 'menor'} (${nextCardVal.v}${nextCardVal.s})`;
         streak = 0; losses++;
       }
 

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+﻿?<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -84,7 +84,7 @@
 <body class="gradient-bg">
 
   <nav class="navbar">
-    <div class="logo">ðŸŽ® StreamGames</div>
+    <div class="logo">🎮 StreamGames</div>
     <div class="connect-bar">
       <span class="status-dot" id="statusDot"></span>
       <input type="text" id="usernameInput" placeholder="@usuario de TikTok">
@@ -95,16 +95,16 @@
 
   <div class="game-layout">
     <div class="game-main">
-      <a href="../index.html" class="back-btn">â† Volver al menÃº</a>
+      <a href="../index.html" class="back-btn">← Volver al menú</a>
 
       <div class="card">
-        <h2 style="margin-bottom:8px;">ðŸ™ˆ Yo Nunca...</h2>
-        <p style="color:var(--muted); font-size:0.9rem;">El chat propone con <strong style="color:var(--pink)">!nunca [frase]</strong> Â· Vota con <strong style="color:#22c55e">!si</strong> o <strong style="color:var(--pink)">!no</strong></p>
+        <h2 style="margin-bottom:8px;">🙈 Yo Nunca...</h2>
+        <p style="color:var(--muted); font-size:0.9rem;">El chat propone con <strong style="color:var(--pink)">!nunca [frase]</strong> · Vota con <strong style="color:#22c55e">!si</strong> o <strong style="color:var(--pink)">!no</strong></p>
       </div>
 
       <!-- Frase actual -->
       <div class="nunca-card" id="nuncaCard">
-        <div style="font-size:3rem;">ðŸ™ˆ</div>
+        <div style="font-size:3rem;">🙈</div>
         <div class="nunca-text" id="nuncaText">Esperando una frase del chat...</div>
         <div class="nunca-author" id="nuncaAuthor"></div>
       </div>
@@ -123,23 +123,23 @@
       </div>
 
       <div style="display:flex; gap:10px;">
-        <button class="btn btn-primary" onclick="nextFrase()">Siguiente frase â–¶</button>
+        <button class="btn btn-primary" onclick="nextFrase()">Siguiente frase ▶</button>
         <button class="btn btn-secondary" onclick="clearVotes()">Limpiar votos</button>
       </div>
     </div>
 
     <div class="game-sidebar">
       <div class="card">
-        <h4 style="margin-bottom:12px;">ðŸ“‹ Cola de frases (<span id="queueCount">0</span>)</h4>
+        <h4 style="margin-bottom:12px;">📋 Cola de frases (<span id="queueCount">0</span>)</h4>
         <div class="queue-list" id="queueList">
           <p style="color:var(--muted); font-size:0.85rem; text-align:center; padding:20px 0;">
-            El chat aÃºn no ha propuesto frases
+            El chat aún no ha propuesto frases
           </p>
         </div>
       </div>
 
       <div class="card">
-        <h4 style="margin-bottom:12px;">ðŸ’¬ Chat en vivo</h4>
+        <h4 style="margin-bottom:12px;">💬 Chat en vivo</h4>
         <div class="chat-feed" id="chatFeed"></div>
       </div>
     </div>
@@ -212,7 +212,7 @@
       const list = document.getElementById('queueList');
       document.getElementById('queueCount').textContent = queue.length;
       if (queue.length === 0) {
-        list.innerHTML = '<p style="color:var(--muted); font-size:0.85rem; text-align:center; padding:20px 0;">Cola vacÃ­a</p>';
+        list.innerHTML = '<p style="color:var(--muted); font-size:0.85rem; text-align:center; padding:20px 0;">Cola vacía</p>';
         return;
       }
       list.innerHTML = queue.map((item, i) => `

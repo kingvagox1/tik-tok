@@ -1,5 +1,5 @@
-﻿/* ============================================================
-   StreamGames â€“ Chat Panel 3D + TTS (All Games)
+﻿?/* ============================================================
+   StreamGames – Chat Panel 3D + TTS (All Games)
    ============================================================ */
 
 let _ttsEnabled  = false;
@@ -11,7 +11,7 @@ let _likeCount   = 0;
 let _followCount = 0;
 let _collapsed   = false;
 
-/* â”€â”€ Voices â”€â”€ */
+/* ── Voices ── */
 function _loadVoices() {
   _ttsVoices = window.speechSynthesis.getVoices();
   const sel = document.getElementById('_vSel');
@@ -30,12 +30,12 @@ if (window.speechSynthesis) {
   [300, 800, 1500].forEach(t => setTimeout(_loadVoices, t));
 }
 
-/* â”€â”€ TTS â”€â”€ */
+/* ── TTS ── */
 function toggleGameTTS() {
   _ttsEnabled = !_ttsEnabled;
   _updateTTSBtn();
   if (!_ttsEnabled) { window.speechSynthesis.cancel(); _ttsQueue = []; _ttsSpeaking = false; }
-  showToast(_ttsEnabled ? 'ðŸ”Š Voz activada' : 'ðŸ”‡ Voz desactivada', 'info');
+  showToast(_ttsEnabled ? '🔊 Voz activada' : '🔇 Voz desactivada', 'info');
 }
 
 function _updateTTSBtn() {
@@ -53,7 +53,7 @@ function _speak(user, text) {
   if (!_ttsEnabled || !window.speechSynthesis || !text) return;
   if (text.trim().startsWith('!')) return;
   const max = parseInt(document.getElementById('_ttsMax')?.value || 100);
-  let msg = text.length > max ? text.slice(0, max) + 'â€¦' : text;
+  let msg = text.length > max ? text.slice(0, max) + '…' : text;
   if (document.getElementById('_ttsUser')?.checked) msg = `${user} dice: ${msg}`;
   _ttsQueue.push(msg);
   _runQueue();
@@ -71,7 +71,7 @@ function _runQueue() {
   window.speechSynthesis.speak(u);
 }
 
-/* â”€â”€ Add message â”€â”€ */
+/* ── Add message ── */
 const _COLORS = ['#ff2d55','#7c3aed','#f59e0b','#22c55e','#3b82f6','#ec4899','#14b8a6','#f97316'];
 function _addMsg(data, isFollow) {
   const feed = document.getElementById('_feed');
@@ -79,7 +79,7 @@ function _addMsg(data, isFollow) {
   feed.querySelector('._ph')?.remove();
 
   const user  = escapeHtml(data.user || 'anon');
-  const text  = escapeHtml(data.comment || (isFollow ? 'â¤ï¸ siguiÃ³ el perfil' : ''));
+  const text  = escapeHtml(data.comment || (isFollow ? '❤️ siguió el perfil' : ''));
   const init  = user.charAt(0).toUpperCase();
   const color = _COLORS[user.charCodeAt(0) % _COLORS.length];
 
@@ -88,7 +88,7 @@ function _addMsg(data, isFollow) {
     border-bottom:1px solid rgba(255,255,255,0.04);animation:_fu 0.2s ease;`;
   el.innerHTML = isFollow
     ? `<div style="width:100%;padding:4px 8px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);
-        border-radius:6px;font-size:0.75rem;color:#22c55e;">â¤ï¸ <strong>${user}</strong> te siguiÃ³</div>`
+        border-radius:6px;font-size:0.75rem;color:#22c55e;">❤️ <strong>${user}</strong> te siguió</div>`
     : `<div style="width:26px;height:26px;border-radius:50%;background:${color};display:flex;align-items:center;
         justify-content:center;font-size:0.68rem;font-weight:800;color:#fff;flex-shrink:0;margin-top:1px;
         box-shadow:0 2px 8px ${color}66;">${init}</div>
@@ -101,7 +101,7 @@ function _addMsg(data, isFollow) {
   feed.scrollTop = feed.scrollHeight;
 }
 
-/* â”€â”€ Stats â”€â”€ */
+/* ── Stats ── */
 function _updateStats() {
   const m = document.getElementById('_sM');
   const l = document.getElementById('_sL');
@@ -113,7 +113,7 @@ function _updateStats() {
   if (c) c.textContent = _msgCount   > 999  ? '999+': _msgCount;
 }
 
-/* â”€â”€ Socket â”€â”€ */
+/* ── Socket ── */
 socket.on('chat-message', (data) => {
   _msgCount++;
   _addMsg(data, false);
@@ -130,7 +130,7 @@ socket.on('follow', (data) => {
   _updateStats();
 });
 
-/* â”€â”€ Panel toggle â”€â”€ */
+/* ── Panel toggle ── */
 function _toggleCollapse() {
   _collapsed = !_collapsed;
   const body = document.getElementById('_body');
@@ -139,7 +139,7 @@ function _toggleCollapse() {
     body.style.maxHeight = _collapsed ? '0' : '420px';
     body.style.opacity   = _collapsed ? '0' : '1';
   }
-  if (btn) btn.textContent = _collapsed ? 'ï¼‹' : 'âˆ’';
+  if (btn) btn.textContent = _collapsed ? '＋' : '−';
 }
 
 function _toggleSettings() {
@@ -151,7 +151,7 @@ function _toggleSettings() {
   if (!open) _loadVoices();
 }
 
-/* â”€â”€ CSS â”€â”€ */
+/* ── CSS ── */
 function _css() {
   if (document.getElementById('_panelCSS')) return;
   const s = document.createElement('style');
@@ -184,7 +184,7 @@ function _css() {
   document.head.appendChild(s);
 }
 
-/* â”€â”€ Build panel â”€â”€ */
+/* ── Build panel ── */
 function _build() {
   if (document.getElementById('_panel')) return;
   _css();
@@ -222,7 +222,7 @@ function _build() {
       </div>
 
       <span style="font-size:0.82rem;font-weight:700;color:#f0f0f0;flex:1;letter-spacing:0.01em;">
-        ðŸ’¬ Chat en vivo
+        💬 Chat en vivo
       </span>
 
       <!-- Msg counter badge -->
@@ -246,7 +246,7 @@ function _build() {
       </button>
 
       <!-- Collapse btn -->
-      <button id="_colBtn" class="_pBtn" onclick="_toggleCollapse()" style="font-size:0.9rem;font-weight:700;">âˆ’</button>
+      <button id="_colBtn" class="_pBtn" onclick="_toggleCollapse()" style="font-size:0.9rem;font-weight:700;">−</button>
     </div>
 
     <!-- Body -->
@@ -257,7 +257,7 @@ function _build() {
         <div style="padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.06);
           background:rgba(0,0,0,0.35);">
           <div style="font-size:0.68rem;font-weight:700;color:#555;text-transform:uppercase;
-            letter-spacing:0.1em;margin-bottom:10px;">âš™ï¸ ConfiguraciÃ³n de voz</div>
+            letter-spacing:0.1em;margin-bottom:10px;">⚙️ Configuración de voz</div>
 
           <div style="margin-bottom:10px;">
             <div style="font-size:0.72rem;color:#666;margin-bottom:5px;">Voz</div>
@@ -286,17 +286,17 @@ function _build() {
           </div>
 
           <div style="margin-bottom:10px;">
-            <div style="font-size:0.72rem;color:#666;margin-bottom:5px;">MÃ¡x. caracteres</div>
+            <div style="font-size:0.72rem;color:#666;margin-bottom:5px;">Máx. caracteres</div>
             <input type="number" id="_ttsMax" value="100" min="20" max="300"
               style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);
               color:#f0f0f0;padding:5px 8px;border-radius:7px;font-size:0.75rem;outline:none;width:80px;">
           </div>
 
-          <button onclick="(()=>{var s=_ttsEnabled;_ttsEnabled=true;_speak('StreamGames','Hola, esta es la voz que leerÃ¡ tu chat en vivo.');_ttsEnabled=s;})()"
+          <button onclick="(()=>{var s=_ttsEnabled;_ttsEnabled=true;_speak('StreamGames','Hola, esta es la voz que leerá tu chat en vivo.');_ttsEnabled=s;})()"
             style="width:100%;padding:7px;background:linear-gradient(135deg,rgba(124,58,237,0.25),rgba(255,45,85,0.15));
             border:1px solid rgba(124,58,237,0.4);color:#a78bfa;border-radius:9px;cursor:pointer;
             font-size:0.78rem;font-weight:600;transition:all 0.2s;">
-            â–¶ Probar voz
+            ▶ Probar voz
           </button>
         </div>
       </div>

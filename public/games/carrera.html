@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+﻿?<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -104,7 +104,7 @@
 </head>
 <body class="gradient-bg">
   <nav class="navbar">
-    <div class="logo">ðŸŽ® StreamGames</div>
+    <div class="logo">🎮 StreamGames</div>
     <div class="connect-bar">
       <span class="status-dot" id="statusDot"></span>
       <input type="text" id="usernameInput" placeholder="@usuario de TikTok">
@@ -115,10 +115,10 @@
 
   <div class="game-layout">
     <div class="game-main">
-      <a href="../index.html" class="back-btn">â† Volver al menÃº</a>
+      <a href="../index.html" class="back-btn">← Volver al menú</a>
       <div class="card">
-        <h2 style="margin-bottom:8px;">ðŸƒ Carrera de Emojis</h2>
-        <p style="color:var(--muted); font-size:0.9rem;">El chat spamea el emoji de su corredor para hacerlo avanzar. Â¡El primero en llegar gana!</p>
+        <h2 style="margin-bottom:8px;">🏃 Carrera de Emojis</h2>
+        <p style="color:var(--muted); font-size:0.9rem;">El chat spamea el emoji de su corredor para hacerlo avanzar. ¡El primero en llegar gana!</p>
       </div>
 
       <!-- Configurar corredores -->
@@ -131,7 +131,7 @@
       <!-- Pista -->
       <div class="card">
         <h4 style="margin-bottom:12px; display:flex; justify-content:space-between;">
-          <span>ðŸ Pista</span>
+          <span>🏁 Pista</span>
           <span id="raceStatus" style="color:var(--muted); font-size:0.85rem;">Esperando inicio</span>
         </h4>
         <div class="track" id="track"></div>
@@ -139,7 +139,7 @@
 
       <!-- Spam feed -->
       <div class="card">
-        <h4 style="margin-bottom:8px;">ðŸ’¬ Spam en vivo</h4>
+        <h4 style="margin-bottom:8px;">💬 Spam en vivo</h4>
         <div class="spam-feed" id="spamFeed"></div>
       </div>
 
@@ -147,22 +147,22 @@
       <div class="winner-banner" id="winnerBanner">
         <div class="winner-emoji" id="winnerEmoji"></div>
         <div class="winner-text" id="winnerText"></div>
-        <div style="color:var(--muted); margin-top:4px;">Â¡GanÃ³ la carrera!</div>
+        <div style="color:var(--muted); margin-top:4px;">¡Ganó la carrera!</div>
       </div>
 
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
-        <button class="btn btn-primary" id="startBtn" onclick="startRace()">ðŸ Iniciar carrera</button>
-        <button class="btn btn-secondary" onclick="resetRace()">ðŸ”„ Reiniciar</button>
+        <button class="btn btn-primary" id="startBtn" onclick="startRace()">🏁 Iniciar carrera</button>
+        <button class="btn btn-secondary" onclick="resetRace()">🔄 Reiniciar</button>
       </div>
     </div>
 
     <div class="game-sidebar">
       <div class="card">
-        <h4 style="margin-bottom:12px;">ðŸ“Š Conteo de spam</h4>
+        <h4 style="margin-bottom:12px;">📊 Conteo de spam</h4>
         <div id="spamCount" style="display:flex; flex-direction:column; gap:8px;"></div>
       </div>
       <div class="card">
-        <h4 style="margin-bottom:12px;">ðŸ’¬ Chat en vivo</h4>
+        <h4 style="margin-bottom:12px;">💬 Chat en vivo</h4>
         <div class="chat-feed" id="chatFeed"></div>
       </div>
     </div>
@@ -172,10 +172,10 @@
   <script src="../shared.js"></script><script src="../tts.js"></script><script src="../donations.js"></script><script src="../credits-panel.js"></script>
   <script>
     let runners = [
-      { emoji: 'ðŸ¢', name: 'Tortuga', progress: 0 },
-      { emoji: 'ðŸ‡', name: 'Conejo', progress: 0 },
-      { emoji: 'ðŸ¦Š', name: 'Zorro', progress: 0 },
-      { emoji: 'ðŸ¸', name: 'Rana', progress: 0 },
+      { emoji: '🐢', name: 'Tortuga', progress: 0 },
+      { emoji: '🐇', name: 'Conejo', progress: 0 },
+      { emoji: '🦊', name: 'Zorro', progress: 0 },
+      { emoji: '🐸', name: 'Rana', progress: 0 },
     ];
     let spamCounts = {};
     let raceActive = false;
@@ -194,8 +194,8 @@
     }
 
     function addRunner() {
-      if (runners.length >= 6) return showToast('MÃ¡ximo 6 corredores', 'error');
-      const emojis = ['ðŸ¦','ðŸ¯','ðŸ¦„','ðŸ¼'];
+      if (runners.length >= 6) return showToast('Máximo 6 corredores', 'error');
+      const emojis = ['🦁','🐯','🦄','🐼'];
       runners.push({ emoji: emojis[runners.length % emojis.length], name: 'Corredor', progress: 0 });
       renderConfig();
       renderTrack();
@@ -233,7 +233,7 @@
       spamCounts = {};
       runners.forEach(r => { r.progress = 0; spamCounts[r.emoji] = 0; });
       document.getElementById('winnerBanner').classList.remove('show');
-      document.getElementById('raceStatus').textContent = 'ðŸƒ Â¡Corriendo!';
+      document.getElementById('raceStatus').textContent = '🏃 ¡Corriendo!';
       document.getElementById('startBtn').disabled = true;
       renderTrack();
     }
@@ -279,12 +279,12 @@
 
           if (r.progress >= FINISH) {
             raceActive = false;
-            document.getElementById('raceStatus').textContent = 'ðŸ† Â¡TerminÃ³!';
+            document.getElementById('raceStatus').textContent = '🏆 ¡Terminó!';
             document.getElementById('startBtn').disabled = false;
             document.getElementById('winnerEmoji').textContent = r.emoji;
-            document.getElementById('winnerText').textContent = r.emoji + ' ganÃ³ con ' + spamCounts[r.emoji] + ' spams';
+            document.getElementById('winnerText').textContent = r.emoji + ' ganó con ' + spamCounts[r.emoji] + ' spams';
             document.getElementById('winnerBanner').classList.add('show');
-            showToast(r.emoji + ' ganÃ³ la carrera!', 'success');
+            showToast(r.emoji + ' ganó la carrera!', 'success');
           }
         }
       });
