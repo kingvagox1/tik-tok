@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Adivina el Número - StreamGames</title>
+  <title>Adivina el NÃºmero - StreamGames</title>
   <link rel="stylesheet" href="../style.css">
   <style>
     .number-display {
@@ -72,7 +72,7 @@
 <body class="gradient-bg">
 
   <nav class="navbar">
-    <div class="logo">🎮 StreamGames</div>
+    <div class="logo">ðŸŽ® StreamGames</div>
     <div class="connect-bar">
       <span class="status-dot" id="statusDot"></span>
       <input type="text" id="usernameInput" placeholder="@usuario de TikTok">
@@ -83,15 +83,15 @@
 
   <div class="game-layout">
     <div class="game-main">
-      <a href="../index.html" class="back-btn">← Volver al menú</a>
+      <a href="../index.html" class="back-btn">â† Volver al menÃº</a>
 
       <div class="card">
-        <h2 style="margin-bottom:8px;">🔢 Adivina el Número</h2>
-        <p style="color:var(--muted); font-size:0.9rem;">El chat escribe un número para adivinar. Gana quien más se acerque.</p>
+        <h2 style="margin-bottom:8px;">ðŸ”¢ Adivina el NÃºmero</h2>
+        <p style="color:var(--muted); font-size:0.9rem;">El chat escribe un nÃºmero para adivinar. Gana quien mÃ¡s se acerque.</p>
       </div>
 
       <div class="guess-card">
-        <p style="color:var(--muted); margin-bottom:8px; font-size:0.9rem;">Número secreto</p>
+        <p style="color:var(--muted); margin-bottom:8px; font-size:0.9rem;">NÃºmero secreto</p>
         <div id="numberDisplay" class="secret-display">???</div>
         <div class="range-hint" id="rangeHint" style="display:none;"></div>
       </div>
@@ -106,7 +106,7 @@
             <input type="number" id="maxNum" value="100" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:var(--text); padding:8px 10px; border-radius:8px; width:80px; text-align:center;">
           </div>
           <div class="number-input-row">
-            <span style="color:var(--muted); font-size:0.9rem;">Tu número:</span>
+            <span style="color:var(--muted); font-size:0.9rem;">Tu nÃºmero:</span>
             <input type="number" id="secretInput" placeholder="??">
             <button class="btn btn-primary" onclick="setSecret()">Iniciar ronda</button>
             <button class="btn btn-secondary" onclick="randomSecret()">Aleatorio</button>
@@ -115,28 +115,28 @@
       </div>
 
       <div style="display:flex; gap:10px;">
-        <button class="btn btn-primary" onclick="revealNumber()">👁 Revelar número</button>
+        <button class="btn btn-primary" onclick="revealNumber()">ðŸ‘ Revelar nÃºmero</button>
         <button class="btn btn-secondary" onclick="newRound()">Nueva ronda</button>
       </div>
     </div>
 
     <div class="game-sidebar">
       <div class="card">
-        <h4 style="margin-bottom:12px;">🎯 Intentos (<span id="guessCount">0</span>)</h4>
+        <h4 style="margin-bottom:12px;">ðŸŽ¯ Intentos (<span id="guessCount">0</span>)</h4>
         <div class="guesses-list" id="guessesList">
-          <p style="color:var(--muted); font-size:0.85rem; text-align:center; padding:10px 0;">Nadie ha adivinado aún</p>
+          <p style="color:var(--muted); font-size:0.85rem; text-align:center; padding:10px 0;">Nadie ha adivinado aÃºn</p>
         </div>
       </div>
 
       <div class="card">
-        <h4 style="margin-bottom:12px;">💬 Chat en vivo</h4>
+        <h4 style="margin-bottom:12px;">ðŸ’¬ Chat en vivo</h4>
         <div class="chat-feed" id="chatFeed"></div>
       </div>
     </div>
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
-  <script src="../shared.js"></script>
+  <script src="../shared.js"></script><script src="../tts.js"></script><script src="../donations.js"></script><script src="../credits-panel.js"></script>
   <script>
     let secretNumber = null;
     let guesses = [];
@@ -144,7 +144,7 @@
     let gameActive = false;
 
     socket.on('chat-message', (data) => {
-      addChatMessage(data);
+      addChatMessage(data, 'chatFeed');
       if (!gameActive || guessers.has(data.user)) return;
       const num = parseInt(data.comment.trim());
       if (isNaN(num)) return;
@@ -163,7 +163,7 @@
       const val = parseInt(document.getElementById('secretInput').value);
       const min = parseInt(document.getElementById('minNum').value);
       const max = parseInt(document.getElementById('maxNum').value);
-      if (isNaN(val) || val < min || val > max) return showToast(`Ingresa un número entre ${min} y ${max}`, 'error');
+      if (isNaN(val) || val < min || val > max) return showToast(`Ingresa un nÃºmero entre ${min} y ${max}`, 'error');
       secretNumber = val;
       gameActive = true;
       guesses = []; guessers.clear();
@@ -187,13 +187,13 @@
     }
 
     function revealNumber() {
-      if (secretNumber === null) return showToast('No hay número secreto', 'error');
+      if (secretNumber === null) return showToast('No hay nÃºmero secreto', 'error');
       gameActive = false;
       document.getElementById('numberDisplay').className = 'number-display';
       document.getElementById('numberDisplay').textContent = secretNumber;
       renderGuesses(true);
       if (guesses.length > 0) {
-        showToast(`🏆 Ganador: @${guesses[0].user} con ${guesses[0].num}`, 'success');
+        showToast(`ðŸ† Ganador: @${guesses[0].user} con ${guesses[0].num}`, 'success');
       }
     }
 
@@ -212,17 +212,22 @@
       const list = document.getElementById('guessesList');
       document.getElementById('guessCount').textContent = guesses.length;
       if (guesses.length === 0) {
-        list.innerHTML = '<p style="color:var(--muted); font-size:0.85rem; text-align:center; padding:10px 0;">Nadie ha adivinado aún</p>';
+        list.innerHTML = '<p style="color:var(--muted); font-size:0.85rem; text-align:center; padding:10px 0;">Nadie ha adivinado aÃºn</p>';
         return;
       }
       list.innerHTML = guesses.map((g, i) => `
         <div class="guess-row ${i === 0 && revealed ? 'winner-row' : ''}">
           <span class="g-user">@${g.user}</span>
           <span class="g-num">${g.num}</span>
-          <span class="g-diff">${revealed && g.diff !== null ? (g.diff === 0 ? '¡Exacto!' : `±${g.diff}`) : ''}</span>
+          <span class="g-diff">${revealed && g.diff !== null ? (g.diff === 0 ? 'Â¡Exacto!' : `Â±${g.diff}`) : ''}</span>
         </div>
       `).join('');
     }
   </script>
 </body>
 </html>
+
+
+
+
+

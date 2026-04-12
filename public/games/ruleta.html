@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -57,7 +57,7 @@
 <body class="gradient-bg">
 
   <nav class="navbar">
-    <div class="logo">🎮 StreamGames</div>
+    <div class="logo">ðŸŽ® StreamGames</div>
     <div class="connect-bar">
       <span class="status-dot" id="statusDot"></span>
       <input type="text" id="usernameInput" placeholder="@usuario de TikTok">
@@ -68,26 +68,26 @@
 
   <div class="game-layout">
     <div class="game-main">
-      <a href="../index.html" class="back-btn">← Volver al menú</a>
+      <a href="../index.html" class="back-btn">â† Volver al menÃº</a>
 
       <div class="card">
-        <h2 style="margin-bottom:8px;">🎰 Ruleta del Chat</h2>
+        <h2 style="margin-bottom:8px;">ðŸŽ° Ruleta del Chat</h2>
         <p style="color:var(--muted); font-size:0.9rem;">El chat escribe <strong style="color:var(--pink)">!entrar</strong> para participar en el sorteo</p>
       </div>
 
       <div class="ruleta-container">
         <div class="wheel-wrapper">
-          <div class="wheel-pointer">▼</div>
+          <div class="wheel-pointer">â–¼</div>
           <canvas id="wheelCanvas" width="380" height="380"></canvas>
         </div>
 
         <div id="winnerBanner" class="winner-banner">
-          <div style="font-size:1rem; color:var(--muted); margin-bottom:6px;">🎉 Ganador</div>
+          <div style="font-size:1rem; color:var(--muted); margin-bottom:6px;">ðŸŽ‰ Ganador</div>
           <div class="winner-name" id="winnerName"></div>
         </div>
 
         <div style="display:flex; gap:10px;">
-          <button class="btn btn-primary" id="spinBtn" onclick="spinWheel()">🎰 Girar Ruleta</button>
+          <button class="btn btn-primary" id="spinBtn" onclick="spinWheel()">ðŸŽ° Girar Ruleta</button>
           <button class="btn btn-secondary" onclick="clearParticipants()">Limpiar lista</button>
         </div>
       </div>
@@ -95,23 +95,23 @@
 
     <div class="game-sidebar">
       <div class="card">
-        <h4 style="margin-bottom:12px;">👥 Participantes (<span id="partCount">0</span>)</h4>
+        <h4 style="margin-bottom:12px;">ðŸ‘¥ Participantes (<span id="partCount">0</span>)</h4>
         <div class="participants-grid" id="participantsGrid">
           <p style="color:var(--muted); font-size:0.85rem; width:100%; text-align:center; padding:20px 0;">
-            Nadie ha entrado aún
+            Nadie ha entrado aÃºn
           </p>
         </div>
       </div>
 
       <div class="card">
-        <h4 style="margin-bottom:12px;">💬 Chat en vivo</h4>
+        <h4 style="margin-bottom:12px;">ðŸ’¬ Chat en vivo</h4>
         <div class="chat-feed" id="chatFeed"></div>
       </div>
     </div>
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
-  <script src="../shared.js"></script>
+  <script src="../shared.js"></script><script src="../tts.js"></script><script src="../donations.js"></script><script src="../credits-panel.js"></script>
   <script>
     const canvas = document.getElementById('wheelCanvas');
     const ctx = canvas.getContext('2d');
@@ -122,7 +122,7 @@
     let currentAngle = 0;
 
     socket.on('chat-message', (data) => {
-      addChatMessage(data);
+      addChatMessage(data, 'chatFeed');
       if (data.comment.trim().toLowerCase() === '!entrar') {
         if (!participants.includes(data.user)) {
           participants.push(data.user);
@@ -170,7 +170,7 @@
         ctx.font = `bold ${Math.min(14, 120 / participants.length + 8)}px Segoe UI`;
         ctx.shadowColor = 'rgba(0,0,0,0.5)';
         ctx.shadowBlur = 4;
-        const label = p.length > 12 ? p.substring(0, 12) + '…' : p;
+        const label = p.length > 12 ? p.substring(0, 12) + 'â€¦' : p;
         ctx.fillText(label, 165, 5);
         ctx.restore();
       });
@@ -216,7 +216,7 @@
 
     function showWinner() {
       const slice = (Math.PI * 2) / participants.length;
-      // El puntero apunta hacia arriba (270° = -PI/2)
+      // El puntero apunta hacia arriba (270Â° = -PI/2)
       const normalized = ((-currentAngle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
       const pointer = (Math.PI * 1.5);
       const adjusted = (pointer - normalized + Math.PI * 2) % (Math.PI * 2);
@@ -225,7 +225,7 @@
 
       document.getElementById('winnerName').textContent = '@' + winner;
       document.getElementById('winnerBanner').classList.add('show');
-      showToast('🎉 Ganador: @' + winner, 'success');
+      showToast('ðŸŽ‰ Ganador: @' + winner, 'success');
     }
 
     function clearParticipants() {
@@ -240,7 +240,7 @@
       const grid = document.getElementById('participantsGrid');
       document.getElementById('partCount').textContent = participants.length;
       if (participants.length === 0) {
-        grid.innerHTML = '<p style="color:var(--muted); font-size:0.85rem; width:100%; text-align:center; padding:20px 0;">Nadie ha entrado aún</p>';
+        grid.innerHTML = '<p style="color:var(--muted); font-size:0.85rem; width:100%; text-align:center; padding:20px 0;">Nadie ha entrado aÃºn</p>';
         return;
       }
       grid.innerHTML = participants.map(p => `<div class="participant-chip">@${p}</div>`).join('');
@@ -250,3 +250,8 @@
   </script>
 </body>
 </html>
+
+
+
+
+

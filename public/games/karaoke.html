@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -91,7 +91,7 @@
 </head>
 <body class="gradient-bg">
   <nav class="navbar">
-    <div class="logo">🎮 StreamGames</div>
+    <div class="logo">ðŸŽ® StreamGames</div>
     <div class="connect-bar">
       <span class="status-dot" id="statusDot"></span>
       <input type="text" id="usernameInput" placeholder="@usuario de TikTok">
@@ -102,27 +102,27 @@
 
   <div class="game-layout">
     <div class="game-main">
-      <a href="../index.html" class="back-btn">← Volver al menú</a>
+      <a href="../index.html" class="back-btn">â† Volver al menÃº</a>
       <div class="card">
-        <h2 style="margin-bottom:8px;">🎤 Karaoke Vote</h2>
-        <p style="color:var(--muted); font-size:0.9rem;">El chat vota con <strong style="color:var(--pink)">!1 !2 !3...</strong> para elegir la canción que debes cantar</p>
+        <h2 style="margin-bottom:8px;">ðŸŽ¤ Karaoke Vote</h2>
+        <p style="color:var(--muted); font-size:0.9rem;">El chat vota con <strong style="color:var(--pink)">!1 !2 !3...</strong> para elegir la canciÃ³n que debes cantar</p>
       </div>
 
-      <!-- Canción actual -->
+      <!-- CanciÃ³n actual -->
       <div class="current-song" id="currentSong">
-        <div class="phase-badge phase-idle" id="phaseBadge">Sin canción</div>
-        <div style="font-size:3rem;">🎤</div>
-        <div class="current-song-title" id="currentTitle">Inicia una votación</div>
-        <div class="current-song-artist" id="currentArtist">Agrega canciones y abre la votación</div>
+        <div class="phase-badge phase-idle" id="phaseBadge">Sin canciÃ³n</div>
+        <div style="font-size:3rem;">ðŸŽ¤</div>
+        <div class="current-song-title" id="currentTitle">Inicia una votaciÃ³n</div>
+        <div class="current-song-artist" id="currentArtist">Agrega canciones y abre la votaciÃ³n</div>
       </div>
 
       <!-- Lista de canciones -->
       <div class="card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-          <h4>🎵 Canciones (<span id="songCount">0</span>)</h4>
+          <h4>ðŸŽµ Canciones (<span id="songCount">0</span>)</h4>
           <div style="display:flex; gap:8px;">
-            <button class="btn btn-primary" id="voteBtn" onclick="openVoting()">🗳️ Abrir votación</button>
-            <button class="btn btn-secondary" onclick="pickWinner()">🏆 Elegir ganadora</button>
+            <button class="btn btn-primary" id="voteBtn" onclick="openVoting()">ðŸ—³ï¸ Abrir votaciÃ³n</button>
+            <button class="btn btn-secondary" onclick="pickWinner()">ðŸ† Elegir ganadora</button>
           </div>
         </div>
         <div style="display:flex; flex-direction:column; gap:10px;" id="songList">
@@ -130,11 +130,11 @@
         </div>
       </div>
 
-      <!-- Agregar canción -->
+      <!-- Agregar canciÃ³n -->
       <div class="card">
-        <h4 style="margin-bottom:12px;">Agregar canción</h4>
+        <h4 style="margin-bottom:12px;">Agregar canciÃ³n</h4>
         <div class="add-song-form">
-          <input type="text" id="songTitle" placeholder="Título de la canción">
+          <input type="text" id="songTitle" placeholder="TÃ­tulo de la canciÃ³n">
           <input type="text" id="songArtist" placeholder="Artista">
           <button class="btn btn-primary" onclick="addSong()">Agregar</button>
         </div>
@@ -146,20 +146,20 @@
 
     <div class="game-sidebar">
       <div class="card">
-        <h4 style="margin-bottom:12px;">📊 Votos en tiempo real</h4>
+        <h4 style="margin-bottom:12px;">ðŸ“Š Votos en tiempo real</h4>
         <div id="liveVotes" style="display:flex; flex-direction:column; gap:8px;">
-          <p style="color:var(--muted); font-size:0.85rem; text-align:center; padding:10px 0;">Abre la votación para ver los votos</p>
+          <p style="color:var(--muted); font-size:0.85rem; text-align:center; padding:10px 0;">Abre la votaciÃ³n para ver los votos</p>
         </div>
       </div>
       <div class="card">
-        <h4 style="margin-bottom:12px;">💬 Chat en vivo</h4>
+        <h4 style="margin-bottom:12px;">ðŸ’¬ Chat en vivo</h4>
         <div class="chat-feed" id="chatFeed"></div>
       </div>
     </div>
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
-  <script src="../shared.js"></script>
+  <script src="../shared.js"></script><script src="../tts.js"></script><script src="../donations.js"></script><script src="../credits-panel.js"></script>
   <script>
     let songs = [];
     let votes = {};
@@ -173,7 +173,7 @@
         { title: 'Unholy', artist: 'Sam Smith' },
         { title: 'As It Was', artist: 'Harry Styles' },
         { title: 'Quevedo: Bzrp Music Sessions #52', artist: 'Bizarrap & Quevedo' },
-        { title: 'Tití Me Preguntó', artist: 'Bad Bunny' },
+        { title: 'TitÃ­ Me PreguntÃ³', artist: 'Bad Bunny' },
       ];
       renderSongs();
       showToast('Canciones cargadas', 'success');
@@ -182,7 +182,7 @@
     function addSong() {
       const title = document.getElementById('songTitle').value.trim();
       const artist = document.getElementById('songArtist').value.trim();
-      if (!title) return showToast('Escribe el título', 'error');
+      if (!title) return showToast('Escribe el tÃ­tulo', 'error');
       songs.push({ title, artist: artist || 'Desconocido' });
       document.getElementById('songTitle').value = '';
       document.getElementById('songArtist').value = '';
@@ -213,7 +213,7 @@
             </div>
           </div>
           <div class="song-votes">${votes[i] || 0}</div>
-          ${phase === 'idle' ? `<button onclick="removeSong(${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;">✕</button>` : ''}
+          ${phase === 'idle' ? `<button onclick="removeSong(${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;">âœ•</button>` : ''}
         </div>
       `).join('');
     }
@@ -225,22 +225,22 @@
       voters.clear();
       songs.forEach((_, i) => votes[i] = 0);
       document.getElementById('phaseBadge').className = 'phase-badge phase-voting';
-      document.getElementById('phaseBadge').textContent = '🗳️ Votación abierta';
-      document.getElementById('currentTitle').textContent = '¿Qué canción canto?';
-      document.getElementById('currentArtist').textContent = 'El chat está votando...';
-      document.getElementById('voteBtn').textContent = '🔒 Cerrar votación';
+      document.getElementById('phaseBadge').textContent = 'ðŸ—³ï¸ VotaciÃ³n abierta';
+      document.getElementById('currentTitle').textContent = 'Â¿QuÃ© canciÃ³n canto?';
+      document.getElementById('currentArtist').textContent = 'El chat estÃ¡ votando...';
+      document.getElementById('voteBtn').textContent = 'ðŸ”’ Cerrar votaciÃ³n';
       document.getElementById('voteBtn').onclick = closeVoting;
       renderSongs();
       renderLiveVotes();
-      showToast('¡Votación abierta!', 'success');
+      showToast('Â¡VotaciÃ³n abierta!', 'success');
     }
 
     function closeVoting() {
       phase = 'idle';
-      document.getElementById('voteBtn').textContent = '🗳️ Abrir votación';
+      document.getElementById('voteBtn').textContent = 'ðŸ—³ï¸ Abrir votaciÃ³n';
       document.getElementById('voteBtn').onclick = openVoting;
       document.getElementById('phaseBadge').className = 'phase-badge phase-idle';
-      document.getElementById('phaseBadge').textContent = 'Votación cerrada';
+      document.getElementById('phaseBadge').textContent = 'VotaciÃ³n cerrada';
       renderSongs();
     }
 
@@ -252,20 +252,20 @@
       const winner = winners[Math.floor(Math.random() * winners.length)];
       phase = 'singing';
       document.getElementById('phaseBadge').className = 'phase-badge phase-singing';
-      document.getElementById('phaseBadge').textContent = '🎤 ¡Cantando!';
+      document.getElementById('phaseBadge').textContent = 'ðŸŽ¤ Â¡Cantando!';
       document.getElementById('currentTitle').textContent = winner.title;
       document.getElementById('currentArtist').textContent = winner.artist;
       // Highlight winner
       document.querySelectorAll('.song-card').forEach(c => c.classList.remove('winner'));
       const winCard = document.getElementById('songCard' + winner.i);
       if (winCard) winCard.classList.add('winner');
-      showToast('🎤 Canción elegida: ' + winner.title, 'success');
+      showToast('ðŸŽ¤ CanciÃ³n elegida: ' + winner.title, 'success');
     }
 
     function renderLiveVotes() {
       const el = document.getElementById('liveVotes');
       if (phase !== 'voting') {
-        el.innerHTML = '<p style="color:var(--muted); font-size:0.85rem; text-align:center; padding:10px 0;">Abre la votación para ver los votos</p>';
+        el.innerHTML = '<p style="color:var(--muted); font-size:0.85rem; text-align:center; padding:10px 0;">Abre la votaciÃ³n para ver los votos</p>';
         return;
       }
       const total = Object.values(votes).reduce((a,b) => a+b, 0) || 1;
@@ -283,7 +283,7 @@
     }
 
     socket.on('chat-message', (data) => {
-      addChatMessage(data);
+      addChatMessage(data, 'chatFeed');
       if (phase !== 'voting' || voters.has(data.user)) return;
       const msg = data.comment.trim();
       const match = msg.match(/^!(\d+)$/);
@@ -302,3 +302,8 @@
   </script>
 </body>
 </html>
+
+
+
+
+

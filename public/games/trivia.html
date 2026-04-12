@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -87,7 +87,7 @@
 <body class="gradient-bg">
 
   <nav class="navbar">
-    <div class="logo">🎮 StreamGames</div>
+    <div class="logo">ðŸŽ® StreamGames</div>
     <div class="connect-bar">
       <span class="status-dot" id="statusDot"></span>
       <input type="text" id="usernameInput" placeholder="@usuario de TikTok">
@@ -98,25 +98,25 @@
 
   <div class="game-layout">
     <div class="game-main">
-      <a href="../index.html" class="back-btn">← Volver al menú</a>
+      <a href="../index.html" class="back-btn">â† Volver al menÃº</a>
 
       <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
         <div>
-          <h2 style="margin-bottom:4px;">🧠 Trivia en Vivo</h2>
-          <p style="color:var(--muted); font-size:0.9rem;">Chat vota con <strong style="color:var(--pink)">A B C D</strong> · Pregunta <span id="qNum">0</span></p>
+          <h2 style="margin-bottom:4px;">ðŸ§  Trivia en Vivo</h2>
+          <p style="color:var(--muted); font-size:0.9rem;">Chat vota con <strong style="color:var(--pink)">A B C D</strong> Â· Pregunta <span id="qNum">0</span></p>
         </div>
-        <div class="timer-ring" id="timerRing">–</div>
+        <div class="timer-ring" id="timerRing">â€“</div>
       </div>
 
       <!-- Pregunta actual -->
       <div class="question-card" id="questionCard">
-        <div class="question-text" id="questionText">Crea una pregunta para empezar 👇</div>
+        <div class="question-text" id="questionText">Crea una pregunta para empezar ðŸ‘‡</div>
         <div class="options-grid" id="optionsGrid"></div>
       </div>
 
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
-        <button class="btn btn-primary" onclick="revealAnswer()">✅ Revelar respuesta</button>
-        <button class="btn btn-secondary" onclick="nextQuestion()">Siguiente ▶</button>
+        <button class="btn btn-primary" onclick="revealAnswer()">âœ… Revelar respuesta</button>
+        <button class="btn btn-secondary" onclick="nextQuestion()">Siguiente â–¶</button>
         <button class="btn btn-secondary" onclick="toggleForm()">+ Nueva pregunta</button>
       </div>
 
@@ -126,10 +126,10 @@
         <div class="new-question-form">
           <textarea id="qText" placeholder="Escribe la pregunta..."></textarea>
           <div class="options-inputs">
-            <input id="optA" placeholder="A) Opción A">
-            <input id="optB" placeholder="B) Opción B">
-            <input id="optC" placeholder="C) Opción C">
-            <input id="optD" placeholder="D) Opción D">
+            <input id="optA" placeholder="A) OpciÃ³n A">
+            <input id="optB" placeholder="B) OpciÃ³n B">
+            <input id="optC" placeholder="C) OpciÃ³n C">
+            <input id="optD" placeholder="D) OpciÃ³n D">
           </div>
           <div style="display:flex; gap:10px; align-items:center;">
             <span style="color:var(--muted); font-size:0.9rem;">Respuesta correcta:</span>
@@ -147,27 +147,27 @@
 
     <div class="game-sidebar">
       <div class="card">
-        <h4 style="margin-bottom:12px;">🏆 Jugadores</h4>
+        <h4 style="margin-bottom:12px;">ðŸ† Jugadores</h4>
         <div class="players-list" id="playersList">
-          <p style="color:var(--muted); font-size:0.85rem; text-align:center; padding:10px 0;">Sin jugadores aún</p>
+          <p style="color:var(--muted); font-size:0.85rem; text-align:center; padding:10px 0;">Sin jugadores aÃºn</p>
         </div>
       </div>
 
       <div class="card">
-        <h4 style="margin-bottom:12px;">💬 Chat en vivo</h4>
+        <h4 style="margin-bottom:12px;">ðŸ’¬ Chat en vivo</h4>
         <div class="chat-feed" id="chatFeed"></div>
       </div>
     </div>
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
-  <script src="../shared.js"></script>
+  <script src="../shared.js"></script><script src="../tts.js"></script><script src="../donations.js"></script><script src="../credits-panel.js"></script>
   <script>
     const LETTERS = ['A','B','C','D'];
     let questions = [
-      { text: '¿Cuál es el planeta más grande del sistema solar?', options: ['Saturno','Júpiter','Neptuno','Urano'], correct: 1 },
-      { text: '¿En qué año llegó el hombre a la Luna?', options: ['1965','1972','1969','1971'], correct: 2 },
-      { text: '¿Cuántos lados tiene un hexágono?', options: ['5','7','8','6'], correct: 3 },
+      { text: 'Â¿CuÃ¡l es el planeta mÃ¡s grande del sistema solar?', options: ['Saturno','JÃºpiter','Neptuno','Urano'], correct: 1 },
+      { text: 'Â¿En quÃ© aÃ±o llegÃ³ el hombre a la Luna?', options: ['1965','1972','1969','1971'], correct: 2 },
+      { text: 'Â¿CuÃ¡ntos lados tiene un hexÃ¡gono?', options: ['5','7','8','6'], correct: 3 },
     ];
     let currentQ = -1;
     let votes = [0,0,0,0];
@@ -176,13 +176,27 @@
     let revealed = false;
     let timer = null;
     let timeLeft = 0;
+    let voterChoices = {}; // { user: voteIndex }
 
     socket.on('chat-message', (data) => {
-      addChatMessage(data);
+      addChatMessage(data, 'chatFeed');
       const msg = data.comment.trim().toUpperCase();
+
+    // ── Eventos de moderador ──
+    socket.on('mod-question-added', (q) => {
+      if (!q || !q.text) return;
+      questions.push(q);
+      if (currentQ < 0) { currentQ = 0; loadQuestion(); }
+      else showToast('Pregunta agregada por moderador', 'info');
+    });
+
+    socket.on('mod-reveal-answer', () => revealAnswer());
+    socket.on('mod-next-question', () => nextQuestion());
+    socket.on('mod-start-timer',   (s) => startTimer(s || 30));
       if (['A','B','C','D'].includes(msg) && currentQ >= 0 && !revealed && !voters.has(data.user)) {
         const idx = LETTERS.indexOf(msg);
         voters.add(data.user);
+        voterChoices[data.user] = idx;
         votes[idx]++;
         if (!players[data.user]) players[data.user] = 0;
         updateOptions();
@@ -195,6 +209,7 @@
       revealed = false;
       votes = [0,0,0,0];
       voters.clear();
+      voterChoices = {};
       document.getElementById('questionText').textContent = q.text;
       document.getElementById('qNum').textContent = `${currentQ + 1}/${questions.length}`;
       renderOptions(q);
@@ -232,10 +247,21 @@
       const q = questions[currentQ];
       const correctIdx = q.correct;
 
-      // Dar puntos a quienes votaron correcto
-      voters.forEach(user => {
-        // No podemos saber qué votó cada uno individualmente aquí, solo contamos
+      // Calcular ganadores y perdedores para créditos
+      const winners = [];
+      const losers  = [];
+      Object.entries(voterChoices).forEach(([user, voteIdx]) => {
+        if (voteIdx === correctIdx) winners.push(user);
+        else losers.push(user);
       });
+
+      if (winners.length > 0 || losers.length > 0) {
+        socket.emit('game-result', {
+          winners, losers,
+          winAmount: 10, loseAmount: 3,
+          game: 'Trivia'
+        });
+      }
 
       q.options.forEach((_, i) => {
         const btn = document.getElementById('opt' + i);
@@ -246,7 +272,7 @@
     function nextQuestion() {
       currentQ++;
       if (currentQ >= questions.length) {
-        showToast('¡Se acabaron las preguntas!', 'success');
+        showToast('Â¡Se acabaron las preguntas!', 'success');
         currentQ = questions.length - 1;
         return;
       }
@@ -269,7 +295,7 @@
 
     function stopTimer() {
       if (timer) { clearInterval(timer); timer = null; }
-      document.getElementById('timerRing').textContent = '–';
+      document.getElementById('timerRing').textContent = 'â€“';
     }
 
     function toggleForm() {
@@ -300,3 +326,8 @@
   </script>
 </body>
 </html>
+
+
+
+
+

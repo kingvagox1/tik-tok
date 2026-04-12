@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -84,7 +84,7 @@
 <body class="gradient-bg">
 
   <nav class="navbar">
-    <div class="logo">🎮 StreamGames</div>
+    <div class="logo">ðŸŽ® StreamGames</div>
     <div class="connect-bar">
       <span class="status-dot" id="statusDot"></span>
       <input type="text" id="usernameInput" placeholder="@usuario de TikTok">
@@ -95,10 +95,10 @@
 
   <div class="game-layout">
     <div class="game-main">
-      <a href="../index.html" class="back-btn">← Volver al menú</a>
+      <a href="../index.html" class="back-btn">â† Volver al menÃº</a>
 
       <div class="card">
-        <h2 style="margin-bottom:8px;">🎯 Verdad o Reto</h2>
+        <h2 style="margin-bottom:8px;">ðŸŽ¯ Verdad o Reto</h2>
         <p style="color:var(--muted); font-size:0.9rem;">
           Chat propone con <strong style="color:#3b82f6">!verdad [texto]</strong> o <strong style="color:var(--pink)">!reto [texto]</strong>
         </p>
@@ -106,7 +106,7 @@
 
       <!-- Jugadores -->
       <div class="card">
-        <h4 style="margin-bottom:12px;">👥 Jugadores en el grupo</h4>
+        <h4 style="margin-bottom:12px;">ðŸ‘¥ Jugadores en el grupo</h4>
         <div class="players-setup" id="playersSetup">
           <p style="color:var(--muted); font-size:0.85rem;" id="noPlayersMsg">Agrega jugadores abajo</p>
         </div>
@@ -118,50 +118,50 @@
 
       <!-- Carta actual -->
       <div class="vr-card idle" id="vrCard">
-        <div style="font-size:3rem;">🎯</div>
+        <div style="font-size:3rem;">ðŸŽ¯</div>
         <div class="vr-text" style="color:var(--muted);">Elige una verdad o reto para empezar</div>
       </div>
 
       <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
         <div class="spin-mini" id="playerSpinner" onclick="spinPlayer()">Girar<br>jugador</div>
         <div style="display:flex; flex-direction:column; gap:8px;">
-          <button class="btn btn-primary" onclick="pickRandom('verdad')">🔵 Verdad aleatoria</button>
-          <button class="btn btn-danger" onclick="pickRandom('reto')">🔴 Reto aleatorio</button>
+          <button class="btn btn-primary" onclick="pickRandom('verdad')">ðŸ”µ Verdad aleatoria</button>
+          <button class="btn btn-danger" onclick="pickRandom('reto')">ðŸ”´ Reto aleatorio</button>
         </div>
       </div>
     </div>
 
     <div class="game-sidebar">
       <div class="card">
-        <h4 style="margin-bottom:12px;">📋 Cola del chat</h4>
+        <h4 style="margin-bottom:12px;">ðŸ“‹ Cola del chat</h4>
         <div class="queue-tabs">
-          <button class="tab-btn active" onclick="switchTab('verdad', this)">💙 Verdades (<span id="vCount">0</span>)</button>
-          <button class="tab-btn" onclick="switchTab('reto', this)">❤️ Retos (<span id="rCount">0</span>)</button>
+          <button class="tab-btn active" onclick="switchTab('verdad', this)">ðŸ’™ Verdades (<span id="vCount">0</span>)</button>
+          <button class="tab-btn" onclick="switchTab('reto', this)">â¤ï¸ Retos (<span id="rCount">0</span>)</button>
         </div>
         <div class="queue-section active" id="qVerdad">
-          <p style="color:var(--muted); font-size:0.82rem; text-align:center; padding:10px 0;">Sin verdades aún</p>
+          <p style="color:var(--muted); font-size:0.82rem; text-align:center; padding:10px 0;">Sin verdades aÃºn</p>
         </div>
         <div class="queue-section" id="qReto">
-          <p style="color:var(--muted); font-size:0.82rem; text-align:center; padding:10px 0;">Sin retos aún</p>
+          <p style="color:var(--muted); font-size:0.82rem; text-align:center; padding:10px 0;">Sin retos aÃºn</p>
         </div>
       </div>
 
       <div class="card">
-        <h4 style="margin-bottom:12px;">💬 Chat en vivo</h4>
+        <h4 style="margin-bottom:12px;">ðŸ’¬ Chat en vivo</h4>
         <div class="chat-feed" id="chatFeed"></div>
       </div>
     </div>
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
-  <script src="../shared.js"></script>
+  <script src="../shared.js"></script><script src="../tts.js"></script><script src="../donations.js"></script><script src="../credits-panel.js"></script>
   <script>
     let players = [];
     let queues = { verdad: [], reto: [] };
     let currentPlayer = null;
 
     socket.on('chat-message', (data) => {
-      addChatMessage(data);
+      addChatMessage(data, 'chatFeed');
       const msg = data.comment.trim();
       const lower = msg.toLowerCase();
 
@@ -198,7 +198,7 @@
       setup.innerHTML = players.map(p => `
         <div class="player-tag">
           ${escapeHtml(p)}
-          <button onclick="removePlayer('${escapeHtml(p)}')" title="Quitar">✕</button>
+          <button onclick="removePlayer('${escapeHtml(p)}')" title="Quitar">âœ•</button>
         </div>
       `).join('');
     }
@@ -238,7 +238,7 @@
       card.className = `vr-card ${type}`;
       const playerText = currentPlayer ? `Le toca a <span>${currentPlayer}</span>` : 'Elige un jugador';
       card.innerHTML = `
-        <div class="vr-type ${type}">${type === 'verdad' ? '💙 Verdad' : '❤️ Reto'}</div>
+        <div class="vr-type ${type}">${type === 'verdad' ? 'ðŸ’™ Verdad' : 'â¤ï¸ Reto'}</div>
         <div class="vr-text">${escapeHtml(item.text)}</div>
         <div class="vr-player">${playerText}</div>
         <div style="color:var(--muted); font-size:0.8rem;">Propuesto por @${item.user}</div>
@@ -251,7 +251,7 @@
         const count = document.getElementById(type === 'verdad' ? 'vCount' : 'rCount');
         count.textContent = queues[type].length;
         if (queues[type].length === 0) {
-          container.innerHTML = `<p style="color:var(--muted); font-size:0.82rem; text-align:center; padding:10px 0;">Sin ${type}s aún</p>`;
+          container.innerHTML = `<p style="color:var(--muted); font-size:0.82rem; text-align:center; padding:10px 0;">Sin ${type}s aÃºn</p>`;
           return;
         }
         container.innerHTML = queues[type].map((item, i) => `
@@ -277,3 +277,8 @@
   </script>
 </body>
 </html>
+
+
+
+
+

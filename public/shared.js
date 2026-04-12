@@ -40,13 +40,26 @@ function disconnectTikTok() {
   showToast('Desconectado de TikTok', 'info');
 }
 
-/* ── Auto-reconectar desde sessionStorage ── */
+/* ── Al cargar la página: pedir estado actual sin reconectar ── */
 window.addEventListener('load', () => {
   const saved = sessionStorage.getItem('tiktokUser');
   if (saved) {
     const input = $id('usernameInput');
     if (input) input.value = saved;
-    socket.emit('connect-tiktok', saved);
+    // Pedir estado actual al servidor sin reconectar
+    socket.emit('get-status');
+  }
+});
+
+/* ── Respuesta del servidor con estado actual ── */
+socket.on('current-status', (data) => {
+  if (data.connected) {
+    // Ya hay sesión activa en el servidor, solo actualizar UI
+    _updateConnectionUI(true, data.username);
+  } else {
+    // No hay sesión activa, reconectar
+    const saved = sessionStorage.getItem('tiktokUser');
+    if (saved) socket.emit('connect-tiktok', saved);
   }
 });
 

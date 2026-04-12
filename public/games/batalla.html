@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -101,7 +101,7 @@
 <body class="gradient-bg">
 
   <nav class="navbar">
-    <div class="logo">🎮 StreamGames</div>
+    <div class="logo">ðŸŽ® StreamGames</div>
     <div class="connect-bar">
       <span class="status-dot" id="statusDot"></span>
       <input type="text" id="usernameInput" placeholder="@usuario de TikTok">
@@ -112,26 +112,26 @@
 
   <div class="game-layout">
     <div class="game-main">
-      <a href="../index.html" class="back-btn">← Volver al menú</a>
+      <a href="../index.html" class="back-btn">â† Volver al menÃº</a>
 
       <div class="card">
-        <h2 style="margin-bottom:8px;">⚔️ Batalla de Equipos</h2>
+        <h2 style="margin-bottom:8px;">âš”ï¸ Batalla de Equipos</h2>
         <p style="color:var(--muted); font-size:0.9rem;">
-          Únete con <strong style="color:var(--pink)">!rojo</strong> o <strong style="color:#3b82f6">!azul</strong> · Ataca con <strong style="color:#f59e0b">!atacar</strong>
+          Ãšnete con <strong style="color:var(--pink)">!rojo</strong> o <strong style="color:#3b82f6">!azul</strong> Â· Ataca con <strong style="color:#f59e0b">!atacar</strong>
         </p>
       </div>
 
       <!-- Arena -->
       <div class="battle-arena">
         <div class="team-card team-red">
-          <div class="team-name">🔴 Equipo Rojo</div>
+          <div class="team-name">ðŸ”´ Equipo Rojo</div>
           <div class="team-hp" id="hpRed">100</div>
           <div class="hp-bar"><div class="hp-fill hp-fill-red" id="barRed" style="width:100%"></div></div>
           <div class="team-count" id="countRed">0 jugadores</div>
         </div>
-        <div class="vs-badge">⚔️<br>VS</div>
+        <div class="vs-badge">âš”ï¸<br>VS</div>
         <div class="team-card team-blue">
-          <div class="team-name">🔵 Equipo Azul</div>
+          <div class="team-name">ðŸ”µ Equipo Azul</div>
           <div class="team-hp" id="hpBlue">100</div>
           <div class="hp-bar"><div class="hp-fill hp-fill-blue" id="barBlue" style="width:100%"></div></div>
           <div class="team-count" id="countBlue">0 jugadores</div>
@@ -143,7 +143,7 @@
         <div class="config-row">
           <label>HP inicial:</label>
           <input type="number" id="maxHp" value="100" min="10" max="1000">
-          <label>Daño por ataque:</label>
+          <label>DaÃ±o por ataque:</label>
           <input type="number" id="dmgPerAtk" value="1" min="1" max="50">
           <label>Cooldown (s):</label>
           <input type="number" id="cooldown" value="3" min="0" max="30">
@@ -153,7 +153,7 @@
 
       <!-- Log -->
       <div class="card">
-        <h4 style="margin-bottom:10px;">⚔️ Log de ataques</h4>
+        <h4 style="margin-bottom:10px;">âš”ï¸ Log de ataques</h4>
         <div class="attack-log" id="attackLog">
           <p style="color:var(--muted); font-size:0.82rem; text-align:center; padding:10px 0;">La batalla no ha comenzado</p>
         </div>
@@ -162,7 +162,7 @@
 
     <div class="game-sidebar">
       <div class="card">
-        <h4 style="margin-bottom:12px;">💬 Chat en vivo</h4>
+        <h4 style="margin-bottom:12px;">ðŸ’¬ Chat en vivo</h4>
         <div class="chat-feed" id="chatFeed"></div>
       </div>
     </div>
@@ -170,14 +170,14 @@
 
   <!-- Winner overlay -->
   <div class="winner-overlay" id="winnerOverlay">
-    <div style="font-size:4rem;">🏆</div>
+    <div style="font-size:4rem;">ðŸ†</div>
     <div class="winner-title" id="winnerTitle"></div>
-    <div style="color:var(--muted);">¡Ganó la batalla!</div>
+    <div style="color:var(--muted);">Â¡GanÃ³ la batalla!</div>
     <button class="btn btn-primary" onclick="resetGame()">Nueva batalla</button>
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
-  <script src="../shared.js"></script>
+  <script src="../shared.js"></script><script src="../tts.js"></script><script src="../donations.js"></script><script src="../credits-panel.js"></script>
   <script>
     let teams = { rojo: new Set(), azul: new Set() };
     let hp = { rojo: 100, azul: 100 };
@@ -186,7 +186,7 @@
     let gameOver = false;
 
     socket.on('chat-message', (data) => {
-      addChatMessage(data);
+      addChatMessage(data, 'chatFeed');
       if (gameOver) return;
       const msg = data.comment.trim().toLowerCase();
       const user = data.user;
@@ -211,7 +211,7 @@
       let targetTeam = null;
       if (teams.rojo.has(user)) { attackerTeam = 'rojo'; targetTeam = 'azul'; }
       else if (teams.azul.has(user)) { attackerTeam = 'azul'; targetTeam = 'rojo'; }
-      else return; // No está en ningún equipo
+      else return; // No estÃ¡ en ningÃºn equipo
 
       cooldowns[user] = now;
       const dmg = parseInt(document.getElementById('dmgPerAtk').value) || 1;
@@ -241,7 +241,7 @@
       const entry = document.createElement('div');
       entry.className = `attack-entry attack-${team}`;
       const target = team === 'rojo' ? 'Azul' : 'Rojo';
-      entry.textContent = `⚔️ @${user} atacó al equipo ${target} (-${dmg} HP)`;
+      entry.textContent = `âš”ï¸ @${user} atacÃ³ al equipo ${target} (-${dmg} HP)`;
       log.appendChild(entry);
       log.scrollTop = log.scrollHeight;
       while (log.children.length > 80) log.removeChild(log.firstChild);
@@ -249,14 +249,20 @@
 
     function endGame(winner) {
       gameOver = true;
+      const loser = winner === 'rojo' ? 'azul' : 'rojo';
+      const winners = Array.from(teams[winner]);
+      const losers  = Array.from(teams[loser]);
+      if (winners.length || losers.length) {
+        socket.emit('game-result', { winners, losers, winAmount: 15, loseAmount: 5, game: 'Batalla de Equipos' });
+      }
       const overlay = document.getElementById('winnerOverlay');
       const title = document.getElementById('winnerTitle');
       overlay.classList.add('show');
       if (winner === 'rojo') {
-        title.textContent = '🔴 Equipo Rojo';
+        title.textContent = 'Equipo Rojo';
         title.className = 'winner-title winner-red';
       } else {
-        title.textContent = '🔵 Equipo Azul';
+        title.textContent = 'Equipo Azul';
         title.className = 'winner-title winner-blue';
       }
     }
@@ -275,3 +281,9 @@
   </script>
 </body>
 </html>
+
+
+
+
+
+

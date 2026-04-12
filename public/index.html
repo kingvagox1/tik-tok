@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>StreamGames – Juegos para TikTok Live</title>
+  <title>StreamGames â€“ Juegos para TikTok Live</title>
   <link rel="stylesheet" href="style.css" />
   <style>
     .chat-panel { bottom: 24px; right: 24px; max-height: 480px; }
@@ -11,101 +11,102 @@
 </head>
 <body>
 
-<!-- ══════════════════════════════════════════════
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
      NAVBAR
-══════════════════════════════════════════════ -->
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <nav class="navbar">
-  <span class="navbar-logo">🎮 StreamGames</span>
+  <span class="navbar-logo">ðŸŽ® StreamGames</span>
   <div class="navbar-connect">
     <span class="status-dot" id="statusDot" title="Desconectado"></span>
     <input type="text" id="usernameInput" placeholder="@usuario TikTok" autocomplete="off" />
-    <button class="btn btn-primary btn-sm" id="connectBtn" onclick="connectTikTok()">Conectar</button>
+    <button class="btn btn-gold btn-sm" id="connectBtn" onclick="connectTikTok()">Conectar</button>
     <button class="btn btn-danger btn-sm" id="disconnectBtn" onclick="disconnectTikTok()" style="display:none">Desconectar</button>
+    <button class="btn btn-secondary btn-sm" id="demoBtn" onclick="toggleDemo()" title="Simula mensajes del chat para probar sin estar en vivo">ðŸŽ® Demo</button>
   </div>
 </nav>
 
-<!-- ══════════════════════════════════════════════
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
      HERO
-══════════════════════════════════════════════ -->
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <section class="hero">
   <h1 class="hero-title">StreamGames</h1>
   <p class="hero-subtitle">Juegos interactivos para tu TikTok Live. Conecta tu cuenta y empieza a jugar con tu chat en tiempo real.</p>
 </section>
 
-<!-- ══════════════════════════════════════════════
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
      GAMES GRID
-══════════════════════════════════════════════ -->
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <section class="games-section">
   <p class="section-title">Elige un juego</p>
   <div class="games-grid">
 
     <a href="games/nunca.html" class="game-card">
-      <div class="game-card-emoji">🙈</div>
-      <div class="game-card-title">Yo Nunca…</div>
-      <div class="game-card-desc">El clásico juego de confesiones. El chat vota y todos participan.</div>
+      <div class="game-card-emoji">ðŸ™ˆ</div>
+      <div class="game-card-title">Yo Nuncaâ€¦</div>
+      <div class="game-card-desc">El clÃ¡sico juego de confesiones. El chat vota y todos participan.</div>
       <span class="game-card-tag">Chat + Amigos</span>
     </a>
 
     <a href="games/ruleta.html" class="game-card">
-      <div class="game-card-emoji">🎰</div>
+      <div class="game-card-emoji">ðŸŽ°</div>
       <div class="game-card-title">Ruleta del Chat</div>
       <div class="game-card-desc">Gira la ruleta y elige un usuario aleatorio del chat como ganador.</div>
       <span class="game-card-tag">Sorteos</span>
     </a>
 
     <a href="games/trivia.html" class="game-card">
-      <div class="game-card-emoji">🧠</div>
+      <div class="game-card-emoji">ðŸ§ </div>
       <div class="game-card-title">Trivia en Vivo</div>
       <div class="game-card-desc">Preguntas de trivia en tiempo real. El chat responde con A, B, C o D.</div>
       <span class="game-card-tag">Chat + Amigos</span>
     </a>
 
     <a href="games/verdad.html" class="game-card">
-      <div class="game-card-emoji">🎯</div>
+      <div class="game-card-emoji">ðŸŽ¯</div>
       <div class="game-card-title">Verdad o Reto</div>
-      <div class="game-card-desc">El chat elige verdad o reto para el streamer. ¿Te atreves?</div>
+      <div class="game-card-desc">El chat elige verdad o reto para el streamer. Â¿Te atreves?</div>
       <span class="game-card-tag">Chat + Amigos</span>
     </a>
 
     <a href="games/adivina.html" class="game-card">
-      <div class="game-card-emoji">🔢</div>
-      <div class="game-card-title">Adivina el Número</div>
-      <div class="game-card-desc">El chat intenta adivinar el número secreto. Pistas de mayor/menor.</div>
+      <div class="game-card-emoji">ðŸ”¢</div>
+      <div class="game-card-title">Adivina el NÃºmero</div>
+      <div class="game-card-desc">El chat intenta adivinar el nÃºmero secreto. Pistas de mayor/menor.</div>
       <span class="game-card-tag">Chat</span>
     </a>
 
     <a href="games/batalla.html" class="game-card">
-      <div class="game-card-emoji">⚔️</div>
+      <div class="game-card-emoji">âš”ï¸</div>
       <div class="game-card-title">Batalla de Equipos</div>
       <div class="game-card-desc">Divide el chat en equipos y compite en retos y preguntas.</div>
       <span class="game-card-tag">Chat</span>
     </a>
 
     <a href="games/mimica.html" class="game-card">
-      <div class="game-card-emoji">🎭</div>
-      <div class="game-card-title">Mímica</div>
-      <div class="game-card-desc">El streamer actúa y el chat adivina la palabra. ¡Sin hablar!</div>
+      <div class="game-card-emoji">ðŸŽ­</div>
+      <div class="game-card-title">MÃ­mica</div>
+      <div class="game-card-desc">El streamer actÃºa y el chat adivina la palabra. Â¡Sin hablar!</div>
       <span class="game-card-tag">Chat + Amigos</span>
     </a>
 
     <a href="games/mayormenor.html" class="game-card">
-      <div class="game-card-emoji">🃏</div>
+      <div class="game-card-emoji">ðŸƒ</div>
       <div class="game-card-title">Mayor o Menor</div>
-      <div class="game-card-desc">¿La siguiente carta será mayor o menor? El chat decide.</div>
+      <div class="game-card-desc">Â¿La siguiente carta serÃ¡ mayor o menor? El chat decide.</div>
       <span class="game-card-tag">Chat</span>
     </a>
 
     <a href="games/carrera.html" class="game-card">
-      <div class="game-card-emoji">🏃</div>
+      <div class="game-card-emoji">ðŸƒ</div>
       <div class="game-card-title">Carrera de Emojis</div>
-      <div class="game-card-desc">Escribe el emoji correcto para avanzar. ¡El más rápido gana!</div>
+      <div class="game-card-desc">Escribe el emoji correcto para avanzar. Â¡El mÃ¡s rÃ¡pido gana!</div>
       <span class="game-card-tag">Chat</span>
     </a>
 
     <a href="games/karaoke.html" class="game-card">
-      <div class="game-card-emoji">🎤</div>
+      <div class="game-card-emoji">ðŸŽ¤</div>
       <div class="game-card-title">Karaoke Vote</div>
-      <div class="game-card-desc">El chat vota la canción que quiere escuchar. Ranking en vivo.</div>
+      <div class="game-card-desc">El chat vota la canciÃ³n que quiere escuchar. Ranking en vivo.</div>
       <span class="game-card-tag">Chat + Amigos</span>
     </a>
 
@@ -114,24 +115,24 @@
   </div>
 </section>
 
-<!-- ══════════════════════════════════════════════
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
      FLOATING CHAT PANEL
-══════════════════════════════════════════════ -->
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <div class="chat-panel" id="chatPanel">
   <div class="chat-panel-header">
     <span class="status-dot" id="panelStatusDot"></span>
     <span class="panel-label">Chat en vivo</span>
     <span class="panel-username" id="panelUsername"></span>
     <span class="msg-counter" id="msgCounter">0 msgs</span>
-    <button class="panel-toggle-btn" id="ttsToggleBtn" onclick="toggleTTS()" title="Activar/desactivar TTS">🔇</button>
-    <button class="panel-toggle-btn" onclick="openTTSSettings()" title="Configuración TTS">⚙️</button>
-    <button class="panel-toggle-btn" onclick="clearLiveChat()" title="Limpiar chat">🗑</button>
-    <button class="panel-toggle-btn" onclick="toggleChatPanel()" title="Minimizar">−</button>
+    <button class="panel-toggle-btn" id="ttsToggleBtn" onclick="toggleTTS()" title="Activar/desactivar TTS">ðŸ”‡</button>
+    <button class="panel-toggle-btn" onclick="openTTSSettings()" title="ConfiguraciÃ³n TTS">âš™ï¸</button>
+    <button class="panel-toggle-btn" onclick="clearLiveChat()" title="Limpiar chat">ðŸ—‘</button>
+    <button class="panel-toggle-btn" onclick="toggleChatPanel()" title="Minimizar">âˆ’</button>
   </div>
 
   <!-- TTS Settings -->
   <div class="tts-settings" id="ttsSettings">
-    <div class="tts-settings-title">🔊 Configuración TTS</div>
+    <div class="tts-settings-title">ðŸ”Š ConfiguraciÃ³n TTS</div>
     <div class="tts-row">
       <label>Voz</label>
       <select class="tts-select" id="ttsVoice"></select>
@@ -155,10 +156,10 @@
       <input type="text" class="tts-input" id="ttsFilter" placeholder="palabras,separadas,por,coma" />
     </div>
     <div class="tts-row">
-      <label>Máx. chars</label>
+      <label>MÃ¡x. chars</label>
       <input type="number" class="tts-input" id="ttsMaxchars" value="120" min="20" max="500" style="width:70px;flex:none" />
     </div>
-    <button class="btn btn-secondary btn-sm w-full" onclick="testTTS()">🔊 Probar voz</button>
+    <button class="btn btn-secondary btn-sm w-full" onclick="testTTS()">ðŸ”Š Probar voz</button>
   </div>
 
   <!-- Chat body -->
@@ -185,13 +186,13 @@
 
 <!-- Floating open button (shown when panel is minimized) -->
 <button class="chat-open-btn hidden" id="chatOpenBtn" onclick="toggleChatPanel()">
-  💬
+  ðŸ’¬
   <span class="chat-badge" id="chatBadge" style="display:none">0</span>
 </button>
 
-<!-- ══════════════════════════════════════════════
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
      SCRIPTS
-══════════════════════════════════════════════ -->
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <script src="/socket.io/socket.io.js"></script>
 <script src="shared.js"></script>
 <script>
@@ -265,14 +266,14 @@ function addFollowMessage(data) {
   const user = escapeHtml(data.user || data.nickname || 'anon');
   const msg = document.createElement('div');
   msg.className = 'live-msg';
-  msg.innerHTML = `<div class="live-msg-follow">❤️ <strong>${user}</strong> te siguió</div>`;
+  msg.innerHTML = `<div class="live-msg-follow">â¤ï¸ <strong>${user}</strong> te siguiÃ³</div>`;
   feed.appendChild(msg);
   while (feed.children.length > 120) feed.removeChild(feed.firstChild);
   feed.scrollTop = feed.scrollHeight;
 }
 
 /* ============================================================
-   TTS – Text-to-Speech
+   TTS â€“ Text-to-Speech
    ============================================================ */
 let ttsEnabled  = false;
 let ttsVoices   = [];
@@ -309,9 +310,9 @@ document.getElementById('ttsVol').addEventListener('input', function() {
 function toggleTTS() {
   ttsEnabled = !ttsEnabled;
   const btn = document.getElementById('ttsToggleBtn');
-  btn.textContent = ttsEnabled ? '🔊' : '🔇';
+  btn.textContent = ttsEnabled ? 'ðŸ”Š' : 'ðŸ”‡';
   btn.title = ttsEnabled ? 'Desactivar TTS' : 'Activar TTS';
-  showToast(ttsEnabled ? '🔊 TTS activado' : '🔇 TTS desactivado', 'info');
+  showToast(ttsEnabled ? 'ðŸ”Š TTS activado' : 'ðŸ”‡ TTS desactivado', 'info');
   if (!ttsEnabled) {
     window.speechSynthesis.cancel();
     ttsQueue = [];
@@ -326,6 +327,9 @@ function openTTSSettings() {
 function speakMessage(user, text) {
   if (!ttsEnabled || !window.speechSynthesis) return;
 
+  // No leer comandos de juegos (mensajes que empiezan con !)
+  if (text.trim().startsWith('!')) return;
+
   const filter = document.getElementById('ttsFilter').value;
   if (filter) {
     const words = filter.split(',').map(w => w.trim().toLowerCase()).filter(Boolean);
@@ -333,7 +337,7 @@ function speakMessage(user, text) {
   }
 
   const maxChars = parseInt(document.getElementById('ttsMaxchars').value) || 120;
-  let msg = text.length > maxChars ? text.slice(0, maxChars) + '…' : text;
+  let msg = text.length > maxChars ? text.slice(0, maxChars) + 'â€¦' : text;
 
   if (document.getElementById('ttsReadUser').checked) msg = `${user} dice: ${msg}`;
 
@@ -358,7 +362,7 @@ function processQueue() {
 function testTTS() {
   const saved = ttsEnabled;
   ttsEnabled = true;
-  speakMessage('StreamGames', 'Hola, esta es una prueba de voz. ¡Bienvenido al stream!');
+  speakMessage('StreamGames', 'Hola, esta es una prueba de voz. Â¡Bienvenido al stream!');
   ttsEnabled = saved;
 }
 
@@ -393,5 +397,8 @@ socket.on('tiktok-status', (data) => {
 });
 </script>
 
-</body>
+<script src="donations.js"></script><script src="credits-panel.js"></script></body>
 </html>
+
+
+
