@@ -479,3 +479,26 @@ input, select, textarea, button { font-family: inherit; }
   .chat-open-btn { right: 16px; bottom: 16px; }
   .toast { right: 16px; bottom: 16px; max-width: calc(100vw - 32px); }
 }
+
+/* ── DRAGGABLE PANELS ── */
+.chat-panel,
+#_chatPanel,
+#_creditPanel,
+#_donPanel {
+  cursor: default;
+  user-select: none;
+}
+
+.chat-panel-header,
+#_chatPanel > div:first-child,
+#_creditPanel > div:first-child,
+#_donPanel > div:first-child {
+  cursor: grab;
+}
+
+.chat-panel-header:active,
+#_chatPanel > div:first-child:active,
+#_creditPanel > div:first-child:active,
+#_donPanel > div:first-child:active {
+  cursor: grabbing;
+}
