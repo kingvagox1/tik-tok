@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    StreamGames – Dashboard en tiempo real 📊
    Estadísticas del stream
    ============================================================ */
@@ -162,7 +162,7 @@ function _buildDashboard() {
       <button onclick="document.getElementById('_dashBody').style.display=document.getElementById('_dashBody').style.display==='none'?'block':'none'"
         style="background:none;border:none;color:#555;cursor:pointer;font-size:0.9rem;">−</button>
     </div>
-    <div id="_dashBody">
+    <div id="_dashBody" style="display:none;">
       <!-- Stats grid -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(255,255,255,0.05);border-bottom:1px solid rgba(255,255,255,0.05);">
         ${[

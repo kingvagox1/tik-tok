@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    StreamGames – Modo Caos 🌊
    Eventos aleatorios que sorprenden al chat
    ============================================================ */
@@ -116,7 +116,7 @@ function _buildChaosPanel() {
       <button onclick="document.getElementById('_chaosBody').style.display=document.getElementById('_chaosBody').style.display==='none'?'block':'none'"
         style="background:none;border:none;color:#555;cursor:pointer;font-size:0.9rem;">−</button>
     </div>
-    <div id="_chaosBody">
+    <div id="_chaosBody" style="display:none;">
       <div style="padding:12px 14px;">
         <button id="_chaosBtn" class="ready" onclick="_triggerRandomChaos()"
           style="width:100%;padding:14px;border-radius:12px;

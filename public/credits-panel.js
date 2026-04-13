@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    StreamGames – Panel de Créditos (Cliente)
    Muestra ranking, créditos ganados y notificaciones
    ============================================================ */
@@ -126,7 +126,7 @@ function _buildCreditPanel() {
     </div>
 
     <!-- Body -->
-    <div id="_cpBody">
+    <div id="_cpBody" style="display:none;">
 
       <!-- Tabs -->
       <div style="display:flex;border-bottom:1px solid rgba(255,255,255,0.06);">
@@ -281,7 +281,7 @@ function _resetCredits() {
 }
 
 /* ── Panel collapse ── */
-let _cpCollapsed = false;
+let _cpCollapsed = true;
 function _toggleCreditPanel() {
   _cpCollapsed = !_cpCollapsed;
   const body = document.getElementById('_cpBody');

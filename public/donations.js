@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    StreamGames – Panel de Donaciones / Regalos
    Sonido, alertas visuales y configuración
    ============================================================ */
@@ -295,7 +295,7 @@ function _buildDonPanel() {
     </div>
 
     <!-- Body -->
-    <div id="_donBody">
+    <div id="_donBody" style="display:none;">
 
       <!-- Quick controls -->
       <div style="display:flex;gap:8px;padding:10px 14px;border-bottom:1px solid rgba(251,191,36,0.08);">
@@ -370,7 +370,7 @@ function _buildDonPanel() {
 }
 
 /* ── Panel controls ── */
-let _donPanelCollapsed = false;
+let _donPanelCollapsed = true;
 function _toggleDonPanel() {
   _donPanelCollapsed = !_donPanelCollapsed;
   const body = document.getElementById('_donBody');

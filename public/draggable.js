@@ -1,14 +1,18 @@
-/* ============================================================
+﻿/* ============================================================
    StreamGames – Draggable Panels v2
    Paneles arrastrables que nunca se salen de la pantalla
    ============================================================ */
 
 // IDs de paneles y sus posiciones por defecto
 const PANEL_DEFAULTS = {
-  'chatPanel':    { right: 24, bottom: 24 },
-  '_chatPanel':   { left:  24, bottom: 24 },
-  '_creditPanel': { right: 24, top:    80 },
-  '_donPanel':    { right: 24, bottom: 24 },
+  'chatPanel':    { right: 24,  bottom: 24  },  // Chat - abajo derecha
+  '_chatPanel':   { left:  24,  bottom: 24  },  // TTS juegos - abajo izquierda
+  '_creditPanel': { right: 24,  top:    80  },  // Creditos - arriba derecha
+  '_donPanel':    { right: 340, bottom: 24  },  // Donaciones - abajo derecha (al lado del chat)
+  '_chaosPanel':  { left:  24,  top:    80  },  // Caos - arriba izquierda
+  '_dashPanel':   { left:  300, bottom: 24  },  // Dashboard - abajo centro-izquierda
+  '_chaosPanel':  { left:  24,  top:    80  },  // Caos - arriba izquierda
+  '_dashPanel':   { left:  300, bottom: 24  },  // Dashboard - abajo centro-izquierda
 };
 
 const _draggableInited = new Set();
