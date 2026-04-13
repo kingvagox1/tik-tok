@@ -310,3 +310,196 @@ if (document.readyState === 'loading') {
 } else {
   _buildCreditPanel();
 }
+
+/* ============================================================
+   RANGOS, LOGROS Y TIENDA – Extensión del panel de créditos
+   ============================================================ */
+
+const RANKS_CLIENT = [
+  { id: 'legend',  label: 'Leyenda',  emoji: '👑', min: 5000, color: '#e8c96a' },
+  { id: 'diamond', label: 'Diamante', emoji: '💎', min: 2000, color: '#67e8f9' },
+  { id: 'gold',    label: 'Oro',      emoji: '🥇', min: 500,  color: '#fbbf24' },
+  { id: 'silver',  label: 'Plata',    emoji: '🥈', min: 100,  color: '#94a3b8' },
+  { id: 'bronze',  label: 'Bronce',   emoji: '🥉', min: 0,    color: '#b45309' },
+];
+
+function _getRankClient(totalEarned) {
+  return RANKS_CLIENT.find(r => totalEarned >= r.min) || RANKS_CLIENT[RANKS_CLIENT.length - 1];
+}
+
+/* ── Notificación de logro ── */
+function _showAchievementNotif(user, achievements) {
+  achievements.forEach((a, i) => {
+    setTimeout(() => {
+      let container = document.getElementById('_achieveNotifs');
+      if (!container) {
+        container = document.createElement('div');
+        container.id = '_achieveNotifs';
+        container.style.cssText = 'position:fixed;top:80px;left:24px;z-index:9997;display:flex;flex-direction:column;gap:8px;pointer-events:none;';
+        document.body.appendChild(container);
+      }
+      const el = document.createElement('div');
+      el.style.cssText = `
+        background:linear-gradient(135deg,rgba(201,168,76,0.95),rgba(108,1,2,0.95));
+        border:1px solid rgba(201,168,76,0.5);
+        border-radius:14px;padding:12px 18px;
+        box-shadow:0 8px 32px rgba(0,0,0,0.6),0 0 20px rgba(201,168,76,0.3);
+        animation:_cnIn 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards;
+        display:flex;align-items:center;gap:12px;min-width:240px;
+      `;
+      el.innerHTML = `
+        <span style="font-size:2rem;">${a.emoji}</span>
+        <div>
+          <div style="font-size:0.7rem;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:0.08em;">¡Logro desbloqueado!</div>
+          <div style="font-weight:800;color:#fff;font-size:0.95rem;">@${escapeHtml(user)}</div>
+          <div style="font-size:0.78rem;color:rgba(255,255,255,0.85);">${a.label} – ${a.desc}</div>
+        </div>
+      `;
+      container.appendChild(el);
+      setTimeout(() => {
+        el.style.opacity = '0'; el.style.transform = 'translateX(-20px)';
+        el.style.transition = 'all 0.3s ease';
+        setTimeout(() => el.remove(), 320);
+      }, 4000);
+    }, i * 600);
+  });
+}
+
+/* ── Actualizar leaderboard con rangos ── */
+const _origRenderLB = _renderLeaderboard;
+_renderLeaderboard = function(data) {
+  const list = document.getElementById('_lbList');
+  if (!list) return;
+  if (!data || !data.length) {
+    list.innerHTML = '<div style="color:var(--muted,#888);font-size:0.78rem;text-align:center;padding:20px 0;">Sin jugadores aún</div>';
+    return;
+  }
+  const medals = ['🥇','🥈','🥉'];
+  list.innerHTML = data.map((u, i) => {
+    const rank      = medals[i] || `#${i+1}`;
+    const rankInfo  = _getRankClient(u.totalEarned || u.credits || 0);
+    const initial   = (u.username||'?').charAt(0).toUpperCase();
+    const barW      = data[0].credits > 0 ? Math.round(u.credits / data[0].credits * 100) : 0;
+    return `
+      <div style="display:flex;align-items:center;gap:8px;padding:7px 6px;border-radius:8px;transition:background 0.2s;"
+        onmouseover="this.style.background='rgba(255,255,255,0.04)'"
+        onmouseout="this.style.background='transparent'">
+        <span style="font-size:0.9rem;min-width:24px;text-align:center;">${rank}</span>
+        <div style="width:26px;height:26px;border-radius:50%;
+          background:linear-gradient(135deg,#e22227,#6c0102);
+          display:flex;align-items:center;justify-content:center;
+          font-size:0.68rem;font-weight:800;color:#fff;flex-shrink:0;">${initial}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:5px;">
+            <span style="font-size:0.78rem;font-weight:700;color:#f0f0f0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">@${escapeHtml(u.username)}</span>
+            <span title="${rankInfo.label}" style="font-size:0.85rem;">${rankInfo.emoji}</span>
+          </div>
+          <div style="height:3px;background:rgba(255,255,255,0.06);border-radius:2px;margin-top:3px;overflow:hidden;">
+            <div style="height:100%;width:${barW}%;background:linear-gradient(90deg,#e22227,#c9a84c);border-radius:2px;"></div>
+          </div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="font-size:0.82rem;font-weight:800;color:${rankInfo.color};">${u.credits}</div>
+          <div style="font-size:0.62rem;color:#555;">créditos</div>
+        </div>
+      </div>`;
+  }).join('');
+};
+
+/* ── Agregar pestaña de Tienda al panel ── */
+function _addShopTab() {
+  const panel = document.getElementById('_creditPanel');
+  if (!panel || panel.querySelector('#_shopTab')) return;
+
+  // Agregar botón de pestaña
+  const tabsEl = panel.querySelector('[id^="tab"]')?.parentElement;
+  if (tabsEl) {
+    const shopBtn = document.createElement('button');
+    shopBtn.id = '_shopTabBtn';
+    shopBtn.style.cssText = 'flex:1;padding:9px;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;cursor:pointer;font-size:0.78rem;font-weight:700;transition:all 0.2s;';
+    shopBtn.textContent = '🏪 Tienda';
+    shopBtn.onclick = () => {
+      _switchTab('shop', shopBtn);
+      socket.emit('get-shop');
+    };
+    tabsEl.appendChild(shopBtn);
+  }
+
+  // Agregar contenido de tienda
+  const body = panel.querySelector('#_cpBody');
+  if (!body) return;
+  const shopContent = document.createElement('div');
+  shopContent.id = '_tabContentShop';
+  shopContent.style.display = 'none';
+  shopContent.style.padding = '12px 14px';
+  shopContent.innerHTML = `
+    <div style="font-size:0.68rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;">
+      🏪 Tienda de Créditos
+    </div>
+    <div id="_shopItemsList" style="display:flex;flex-direction:column;gap:8px;">
+      <div style="color:#555;font-size:0.78rem;text-align:center;padding:16px 0;">Cargando tienda...</div>
+    </div>
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.06);">
+      <div style="font-size:0.68rem;color:#555;margin-bottom:8px;">Comprar para usuario:</div>
+      <div style="display:flex;gap:8px;">
+        <input id="_shopUser" placeholder="@usuario" style="flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#f0f0f0;padding:7px 10px;border-radius:8px;font-size:0.78rem;outline:none;">
+      </div>
+    </div>
+  `;
+  body.appendChild(shopContent);
+}
+
+/* ── Renderizar items de tienda ── */
+socket.on('shop-items', (items) => {
+  _addShopTab();
+  const list = document.getElementById('_shopItemsList');
+  if (!list || !items) return;
+  list.innerHTML = items.map(item => `
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;
+      background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);
+      border-radius:10px;transition:border-color 0.2s;"
+      onmouseover="this.style.borderColor='rgba(201,168,76,0.3)'"
+      onmouseout="this.style.borderColor='rgba(255,255,255,0.07)'">
+      <span style="font-size:1.5rem;">${item.emoji}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:700;font-size:0.82rem;color:#f0f0f0;">${item.label}</div>
+        <div style="font-size:0.72rem;color:#666;">${item.desc}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div style="font-weight:800;color:#c9a84c;font-size:0.85rem;">${item.price} ⭐</div>
+        <button onclick="_buyItem('${item.id}')"
+          style="margin-top:4px;background:linear-gradient(135deg,#e22227,#6c0102);border:none;
+          color:#fff;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:0.72rem;font-weight:700;">
+          Comprar
+        </button>
+      </div>
+    </div>
+  `).join('');
+});
+
+function _buyItem(itemId) {
+  const userInput = document.getElementById('_shopUser');
+  const user = userInput ? userInput.value.trim().replace('@','') : '';
+  if (!user) return showToast('Escribe el usuario primero', 'error');
+  socket.emit('buy-item', { user, itemId });
+}
+
+socket.on('buy-result', (result) => {
+  if (result.ok) {
+    showToast(`✅ ${result.item.label} comprado para @${document.getElementById('_shopUser')?.value || ''}`, 'success');
+    if (result.mystery) showToast(`📦 Caja misteriosa: +${result.mystery} créditos!`, 'success');
+  } else {
+    showToast(`❌ ${result.error}`, 'error');
+  }
+});
+
+/* ── Escuchar logros ── */
+socket.on('achievement', (data) => {
+  _showAchievementNotif(data.user, data.achievements);
+});
+
+/* ── Inicializar tienda cuando el panel esté listo ── */
+setTimeout(() => {
+  _addShopTab();
+  socket.emit('get-shop');
+}, 1000);

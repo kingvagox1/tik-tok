@@ -70,8 +70,9 @@ io.on('connection', (socket) => {
 
   socket.on('add-credits', ({ user, amount, reason }) => {
     if (!user || !amount) return;
-    const u = credits.addCredits(user, amount, reason || 'manual');
-    io.emit('credits-update', { user, credits: u.credits, earned: amount, reason: reason || 'Premio del streamer' });
+    const { user: u, newAchievements } = credits.addCredits(user, amount, reason || 'manual');
+    io.emit('credits-update', { user, credits: u.credits, earned: amount, reason: reason || 'Premio del streamer', rank: u.rank });
+    if (newAchievements.length) io.emit('achievement', { user, achievements: newAchievements });
     io.emit('leaderboard', credits.getLeaderboard(20));
   });
 
@@ -83,19 +84,35 @@ io.on('connection', (socket) => {
 
   socket.on('get-user-credits', (username) => socket.emit('user-credits', credits.getUser(username)));
 
+  // ── Tienda ──
+  socket.on('buy-item', ({ user, itemId }) => {
+    if (!user || !itemId) return;
+    const result = credits.buyItem(user, itemId);
+    socket.emit('buy-result', result);
+    if (result.ok) {
+      const u = credits.getUser(user);
+      io.emit('credits-update', { user, credits: u.credits, earned: -result.item.price, reason: `Compró ${result.item.label}` });
+      if (result.mystery) io.emit('credits-update', { user, credits: u.credits, earned: result.mystery, reason: '📦 Caja misteriosa' });
+      io.emit('leaderboard', credits.getLeaderboard(20));
+    }
+  });
+
+  socket.on('get-shop', () => socket.emit('shop-items', credits.SHOP_ITEMS));
+
   socket.on('game-result', ({ winners = [], losers = [], winAmount = 10, loseAmount = 5, game = '' }) => {
     const updates = [];
     winners.forEach(user => {
       if (!user) return;
-      const u = credits.addCredits(user, winAmount, `win_${game}`);
+      const { user: u, newAchievements } = credits.addCredits(user, winAmount, `win_${game}`);
       credits.recordAction(user, 'win');
-      updates.push({ user, credits: u.credits, earned: winAmount, reason: `¡Ganó en ${game}!` });
+      updates.push({ user, credits: u.credits, earned: winAmount, reason: `¡Ganó en ${game}!`, rank: u.rank });
+      if (newAchievements.length) io.emit('achievement', { user, achievements: newAchievements });
     });
     losers.forEach(user => {
       if (!user) return;
       credits.spendCredits(user, loseAmount);
       const u = credits.getUser(user);
-      updates.push({ user, credits: u.credits, earned: -loseAmount, reason: `Perdió en ${game}` });
+      updates.push({ user, credits: u.credits, earned: -loseAmount, reason: `Perdió en ${game}`, rank: u.rank });
     });
     updates.forEach(upd => io.emit('credits-update', upd));
     io.emit('leaderboard', credits.getLeaderboard(20));
@@ -145,16 +162,19 @@ io.on('connection', (socket) => {
       const VOTE_CMDS = ['a','b','c','d'];
 
       if (GAME_CMDS.includes(msg)) {
-        const u = credits.addCredits(user, 5, 'game_cmd');
-        credits.recordAction(user, 'spin');
-        io.emit('credits-update', { user, credits: u.credits, earned: 5, reason: 'Participó en juego' });
+        const { user: u, newAchievements } = credits.addCredits(user, 5, 'game_cmd');
+        const { user: ua } = credits.recordAction(user, 'spin');
+        io.emit('credits-update', { user, credits: u.credits, earned: 5, reason: 'Participó en juego', rank: u.rank });
+        if (newAchievements.length) io.emit('achievement', { user, achievements: newAchievements });
       } else if (VOTE_CMDS.includes(msg)) {
-        const u = credits.addCredits(user, 3, 'vote');
+        const { user: u, newAchievements } = credits.addCredits(user, 3, 'vote');
         credits.recordAction(user, 'vote');
-        io.emit('credits-update', { user, credits: u.credits, earned: 3, reason: 'Votó en trivia' });
+        io.emit('credits-update', { user, credits: u.credits, earned: 3, reason: 'Votó en trivia', rank: u.rank });
+        if (newAchievements.length) io.emit('achievement', { user, achievements: newAchievements });
       } else if (msg.startsWith('!nunca ') || msg.startsWith('!verdad ') || msg.startsWith('!reto ')) {
-        const u = credits.addCredits(user, 8, 'propose');
-        io.emit('credits-update', { user, credits: u.credits, earned: 8, reason: 'Propuso en juego' });
+        const { user: u, newAchievements } = credits.addCredits(user, 8, 'propose');
+        io.emit('credits-update', { user, credits: u.credits, earned: 8, reason: 'Propuso en juego', rank: u.rank });
+        if (newAchievements.length) io.emit('achievement', { user, achievements: newAchievements });
       }
 
       io.emit('chat-message', {
@@ -172,7 +192,8 @@ io.on('connection', (socket) => {
       const user     = data.uniqueId;
       const diamonds = (data.diamondCount || 0) * (data.repeatCount || 1);
       const earned   = Math.max(10, diamonds * 2);
-      const u = credits.addCredits(user, earned, 'gift');
+      const { user: u, newAchievements } = credits.addCredits(user, earned, 'gift');
+      credits.recordAction(user, 'gift');
       io.emit('gift', {
         user, nickname: data.nickname,
         giftName: data.giftName, giftId: data.giftId,
@@ -181,14 +202,17 @@ io.on('connection', (socket) => {
         giftPicture:    data.giftPictureUrl || '',
         profilePicture: data.profilePictureUrl || ''
       });
-      io.emit('credits-update', { user, credits: u.credits, earned, reason: `Envió ${data.giftName}` });
+      io.emit('credits-update', { user, credits: u.credits, earned, reason: `Envió ${data.giftName}`, rank: u.rank });
+      if (newAchievements.length) io.emit('achievement', { user, achievements: newAchievements });
     });
 
     tiktokConnection.on('follow', (data) => {
       const user = data.uniqueId;
-      const u = credits.addCredits(user, 20, 'follow');
+      const { user: u, newAchievements } = credits.addCredits(user, 20, 'follow');
+      credits.recordAction(user, 'follow');
       io.emit('follow', { user, nickname: data.nickname, profilePicture: data.profilePictureUrl || '' });
-      io.emit('credits-update', { user, credits: u.credits, earned: 20, reason: '¡Siguió el canal!' });
+      io.emit('credits-update', { user, credits: u.credits, earned: 20, reason: '¡Siguió el canal!', rank: u.rank });
+      if (newAchievements.length) io.emit('achievement', { user, achievements: newAchievements });
     });
 
     tiktokConnection.on('disconnected', () => {
