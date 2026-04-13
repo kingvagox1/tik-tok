@@ -22,6 +22,132 @@
     <button class="btn btn-gold btn-sm" id="connectBtn" onclick="connectTikTok()">Conectar</button>
     <button class="btn btn-danger btn-sm" id="disconnectBtn" onclick="disconnectTikTok()" style="display:none">Desconectar</button>
     <button class="btn btn-secondary btn-sm" id="demoBtn" onclick="toggleDemo()" title="Simula mensajes del chat para probar sin estar en vivo">🎮 Demo</button>
+    <!-- Botón de configuración ⋯ -->
+    <div style="position:relative;">
+      <button class="btn btn-secondary btn-sm" id="cfgMenuBtn" onclick="toggleCfgMenu()" title="Configuración" style="font-size:1.1rem;padding:5px 10px;letter-spacing:2px;">⋯</button>
+      <div id="cfgMenu" style="display:none;position:absolute;top:calc(100% + 8px);right:0;width:280px;
+        background:linear-gradient(160deg,#1c1c30,#13131f);
+        border:1px solid rgba(201,168,76,0.2);border-radius:14px;
+        box-shadow:0 20px 60px rgba(0,0,0,0.7),inset 0 1px 0 rgba(201,168,76,0.08);
+        z-index:9999;overflow:hidden;">
+        <!-- Glow top -->
+        <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,0.5),rgba(226,34,39,0.4),transparent);"></div>
+        <!-- Header -->
+        <div style="padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:0.78rem;font-weight:700;color:#c9a84c;text-transform:uppercase;letter-spacing:0.08em;">⚙️ Configuración</span>
+          <button onclick="toggleCfgMenu()" style="background:none;border:none;color:#555;cursor:pointer;font-size:1rem;">✕</button>
+        </div>
+        <!-- Secciones -->
+        <div style="padding:8px 0;max-height:70vh;overflow-y:auto;">
+
+          <!-- TTS -->
+          <div class="cfg-section">
+            <div class="cfg-section-title">🔊 Lector de Chat (TTS)</div>
+            <div class="cfg-row">
+              <span class="cfg-label">Activar voz</span>
+              <button id="cfgTtsBtn" class="cfg-toggle" onclick="toggleTTSFromMenu()">🔇 OFF</button>
+            </div>
+            <div class="cfg-row">
+              <span class="cfg-label">Voz</span>
+              <select id="cfgVoiceSel" class="cfg-select" onchange="syncTTSVoice(this.value)"></select>
+            </div>
+            <div class="cfg-row">
+              <span class="cfg-label">Velocidad</span>
+              <input type="range" id="cfgRate" min="0.5" max="2.5" step="0.1" value="1.2" class="cfg-range"
+                oninput="syncTTSRate(this.value);document.getElementById('cfgRateVal').textContent=parseFloat(this.value).toFixed(1)+'x'">
+              <span id="cfgRateVal" class="cfg-val">1.2x</span>
+            </div>
+            <div class="cfg-row">
+              <span class="cfg-label">Leer usuario</span>
+              <input type="checkbox" id="cfgReadUser" checked class="cfg-check" onchange="syncTTSReadUser(this.checked)">
+            </div>
+            <div class="cfg-row">
+              <span class="cfg-label">Ignorar comandos</span>
+              <input type="checkbox" id="cfgIgnoreCmd" checked class="cfg-check">
+            </div>
+          </div>
+
+          <div class="cfg-divider"></div>
+
+          <!-- Donaciones -->
+          <div class="cfg-section">
+            <div class="cfg-section-title">🎁 Donaciones</div>
+            <div class="cfg-row">
+              <span class="cfg-label">Alertas</span>
+              <button id="cfgDonAlertBtn" class="cfg-toggle active" onclick="toggleDonAlertFromMenu()">✅ ON</button>
+            </div>
+            <div class="cfg-row">
+              <span class="cfg-label">Sonido</span>
+              <button id="cfgDonSoundBtn" class="cfg-toggle active" onclick="toggleDonSoundFromMenu()">🔊 ON</button>
+            </div>
+            <div class="cfg-row">
+              <span class="cfg-label">Tipo de sonido</span>
+              <select class="cfg-select" onchange="if(window._don)_don.soundType=this.value;_playSound(this.value,0.5)">
+                <option value="coins">🪙 Monedas</option>
+                <option value="bell">🔔 Campana</option>
+                <option value="chime">🎵 Chime</option>
+                <option value="pop">💥 Pop</option>
+              </select>
+            </div>
+            <div class="cfg-row">
+              <span class="cfg-label">Volumen</span>
+              <input type="range" id="cfgDonVol" min="0" max="1" step="0.05" value="0.8" class="cfg-range"
+                oninput="if(window._don)_don.volume=parseFloat(this.value);document.getElementById('cfgDonVolVal').textContent=Math.round(this.value*100)+'%'">
+              <span id="cfgDonVolVal" class="cfg-val">80%</span>
+            </div>
+            <div class="cfg-row">
+              <span class="cfg-label">Duración alerta (s)</span>
+              <input type="number" id="cfgDonDur" value="4" min="1" max="15" class="cfg-input-sm"
+                oninput="if(window._don)_don.alertDuration=parseInt(this.value)||4">
+            </div>
+            <div class="cfg-row">
+              <span class="cfg-label">Mín. 💎</span>
+              <input type="number" id="cfgDonMin" value="0" min="0" class="cfg-input-sm"
+                oninput="if(window._don)_don.minDiamonds=parseInt(this.value)||0">
+            </div>
+            <button class="cfg-btn-test" onclick="if(window._testDonation)_testDonation()">▶ Probar alerta</button>
+          </div>
+
+          <div class="cfg-divider"></div>
+
+          <!-- Paneles -->
+          <div class="cfg-section">
+            <div class="cfg-section-title">🪟 Paneles</div>
+            <div class="cfg-row">
+              <span class="cfg-label">Chat en vivo</span>
+              <button class="cfg-toggle active" onclick="togglePanel('chatPanel',this)">👁 Visible</button>
+            </div>
+            <div class="cfg-row">
+              <span class="cfg-label">Créditos</span>
+              <button class="cfg-toggle active" onclick="togglePanel('_creditPanel',this)">👁 Visible</button>
+            </div>
+            <div class="cfg-row">
+              <span class="cfg-label">Donaciones</span>
+              <button class="cfg-toggle active" onclick="togglePanel('_donPanel',this)">👁 Visible</button>
+            </div>
+            <button class="cfg-btn-test" onclick="if(window.resetPanels)resetPanels()">↺ Resetear posición paneles</button>
+          </div>
+
+          <div class="cfg-divider"></div>
+
+          <!-- Créditos admin -->
+          <div class="cfg-section">
+            <div class="cfg-section-title">⭐ Créditos</div>
+            <div class="cfg-row">
+              <span class="cfg-label">Dar créditos a</span>
+              <input type="text" id="cfgCreditUser" placeholder="@usuario" class="cfg-input">
+            </div>
+            <div class="cfg-row">
+              <span class="cfg-label">Cantidad</span>
+              <input type="number" id="cfgCreditAmt" placeholder="100" min="1" class="cfg-input-sm">
+            </div>
+            <button class="cfg-btn-test" onclick="giveCreditFromMenu()">⭐ Dar créditos</button>
+            <button class="cfg-btn-danger" onclick="if(confirm('¿Resetear todos los créditos?'))socket.emit('reset-credits')">🗑 Resetear créditos</button>
+          </div>
+
+        </div>
+      </div>
+    </div>
   </div>
 </nav>
 
@@ -397,7 +523,110 @@ socket.on('tiktok-status', (data) => {
 });
 </script>
 
-<script src="donations.js"></script><script src="credits-panel.js"></script><script src="draggable.js"></script></body>
+<script src="donations.js"></script><script src="credits-panel.js"></script><script src="draggable.js"></script><script src="reactions.js"></script><script src="chaos.js"></script><script src="dashboard.js"></script>
+
+<script>
+/* ── Menú de configuración ⋯ ── */
+function toggleCfgMenu() {
+  const menu = document.getElementById('cfgMenu');
+  const isOpen = menu.style.display !== 'none';
+  menu.style.display = isOpen ? 'none' : 'block';
+  if (!isOpen) _initCfgMenu();
+}
+
+// Cerrar al hacer click fuera
+document.addEventListener('click', (e) => {
+  const menu = document.getElementById('cfgMenu');
+  const btn  = document.getElementById('cfgMenuBtn');
+  if (menu && !menu.contains(e.target) && e.target !== btn && !btn.contains(e.target)) {
+    menu.style.display = 'none';
+  }
+});
+
+function _initCfgMenu() {
+  // Cargar voces TTS
+  const sel = document.getElementById('cfgVoiceSel');
+  if (sel && sel.options.length === 0 && window.ttsVoices) {
+    ttsVoices.forEach((v, i) => {
+      const o = document.createElement('option');
+      o.value = i; o.textContent = `${v.name} (${v.lang})`;
+      sel.appendChild(o);
+    });
+    const esIdx = ttsVoices.findIndex(v => v.lang.startsWith('es'));
+    if (esIdx >= 0) sel.value = esIdx;
+  }
+  // Sincronizar estado TTS
+  const ttsBtn = document.getElementById('cfgTtsBtn');
+  if (ttsBtn) {
+    ttsBtn.textContent = ttsEnabled ? '🔊 ON' : '🔇 OFF';
+    ttsBtn.classList.toggle('active', ttsEnabled);
+  }
+  // Sincronizar donaciones
+  if (window._don) {
+    const dab = document.getElementById('cfgDonAlertBtn');
+    const dsb = document.getElementById('cfgDonSoundBtn');
+    if (dab) { dab.textContent = _don.alertEnabled ? '✅ ON' : '❌ OFF'; dab.classList.toggle('active', _don.alertEnabled); }
+    if (dsb) { dsb.textContent = _don.soundEnabled ? '🔊 ON' : '🔇 OFF'; dsb.classList.toggle('active', _don.soundEnabled); }
+  }
+}
+
+function toggleTTSFromMenu() {
+  toggleTTS();
+  const btn = document.getElementById('cfgTtsBtn');
+  if (btn) { btn.textContent = ttsEnabled ? '🔊 ON' : '🔇 OFF'; btn.classList.toggle('active', ttsEnabled); }
+}
+
+function syncTTSVoice(val) {
+  const sel = document.getElementById('ttsVoice');
+  if (sel) sel.value = val;
+}
+
+function syncTTSRate(val) {
+  const r = document.getElementById('ttsRate');
+  if (r) { r.value = val; document.getElementById('ttsRateVal').textContent = parseFloat(val).toFixed(1); }
+}
+
+function syncTTSReadUser(val) {
+  const cb = document.getElementById('ttsReadUser');
+  if (cb) cb.checked = val;
+}
+
+function toggleDonAlertFromMenu() {
+  if (window._toggleDonEnabled) _toggleDonEnabled();
+  const btn = document.getElementById('cfgDonAlertBtn');
+  if (btn && window._don) { btn.textContent = _don.alertEnabled ? '✅ ON' : '❌ OFF'; btn.classList.toggle('active', _don.alertEnabled); }
+}
+
+function toggleDonSoundFromMenu() {
+  if (window._toggleDonSound) _toggleDonSound();
+  const btn = document.getElementById('cfgDonSoundBtn');
+  if (btn && window._don) { btn.textContent = _don.soundEnabled ? '🔊 ON' : '🔇 OFF'; btn.classList.toggle('active', _don.soundEnabled); }
+}
+
+function togglePanel(id, btn) {
+  const panel = document.getElementById(id);
+  if (!panel) return;
+  const isVisible = panel.style.display !== 'none' && !panel.classList.contains('hidden');
+  if (isVisible) {
+    panel.style.display = 'none';
+    btn.textContent = '🙈 Oculto'; btn.classList.remove('active');
+  } else {
+    panel.style.display = '';
+    btn.textContent = '👁 Visible'; btn.classList.add('active');
+  }
+}
+
+function giveCreditFromMenu() {
+  const user   = document.getElementById('cfgCreditUser')?.value.trim().replace('@','');
+  const amount = parseInt(document.getElementById('cfgCreditAmt')?.value);
+  if (!user || !amount) return showToast('Completa usuario y cantidad', 'error');
+  socket.emit('add-credits', { user, amount, reason: 'Premio del streamer' });
+  showToast(`+${amount} créditos a @${user}`, 'success');
+  document.getElementById('cfgCreditUser').value = '';
+  document.getElementById('cfgCreditAmt').value  = '';
+}
+</script>
+</body>
 </html>
 
 

@@ -99,6 +99,63 @@ io.on('connection', (socket) => {
 
   socket.on('get-shop', () => socket.emit('shop-items', credits.SHOP_ITEMS));
 
+  // ── Modo Caos ──
+  socket.on('chaos-event', ({ type, duration }) => {
+    const lb = credits.getLeaderboard(50);
+    const activeUsers = lb.map(u => u.username);
+
+    if (type === 'rain') {
+      // Lluvia: todos los usuarios activos reciben 5-30 créditos
+      let total = 0;
+      activeUsers.slice(0, 20).forEach(user => {
+        const amount = Math.floor(Math.random() * 26) + 5;
+        credits.addCredits(user, amount, 'chaos_rain');
+        total += amount;
+      });
+      io.emit('chaos-result', { emoji: '🌧️', title: '¡LLUVIA DE CRÉDITOS!', desc: `${activeUsers.length} usuarios recibieron créditos`, amount: total });
+      io.emit('leaderboard', credits.getLeaderboard(20));
+    }
+
+    else if (type === 'double') {
+      io.emit('chaos-result', { emoji: '✖️', title: '¡MULTIPLICADOR x2!', desc: `Los créditos se duplican por ${duration}s` });
+      // El cliente maneja el multiplicador visualmente
+    }
+
+    else if (type === 'mystery') {
+      if (activeUsers.length === 0) return;
+      const winner = activeUsers[Math.floor(Math.random() * Math.min(activeUsers.length, 10))];
+      const prize  = Math.floor(Math.random() * 491) + 10;
+      credits.addCredits(winner, prize, 'chaos_mystery');
+      io.emit('chaos-result', { emoji: '📦', title: '¡CAJA MISTERIOSA!', desc: 'Un usuario ganó un premio sorpresa', winner, amount: prize });
+      io.emit('leaderboard', credits.getLeaderboard(20));
+    }
+
+    else if (type === 'steal') {
+      if (lb.length === 0) return;
+      const richest = lb[0];
+      const stolen  = Math.min(50, richest.credits);
+      credits.spendCredits(richest.username, stolen);
+      const perUser = Math.floor(stolen / Math.min(activeUsers.length, 10));
+      if (perUser > 0) {
+        activeUsers.slice(1, 11).forEach(user => credits.addCredits(user, perUser, 'chaos_steal'));
+      }
+      io.emit('chaos-result', { emoji: '💀', title: '¡ROBO MASIVO!', desc: `@${richest.username} perdió ${stolen} créditos`, amount: perUser });
+      io.emit('leaderboard', credits.getLeaderboard(20));
+    }
+
+    else if (type === 'jackpot') {
+      if (activeUsers.length === 0) return;
+      const winner = activeUsers[Math.floor(Math.random() * Math.min(activeUsers.length, 20))];
+      credits.addCredits(winner, 500, 'chaos_jackpot');
+      io.emit('chaos-result', { emoji: '🎰', title: '¡JACKPOT!', desc: '¡Un usuario ganó el jackpot!', winner, amount: 500 });
+      io.emit('leaderboard', credits.getLeaderboard(20));
+    }
+
+    else if (type === 'freeze') {
+      io.emit('chaos-result', { emoji: '❄️', title: '¡CONGELADO!', desc: `Nadie gana ni pierde créditos por ${duration}s` });
+    }
+  });
+
   socket.on('game-result', ({ winners = [], losers = [], winAmount = 10, loseAmount = 5, game = '' }) => {
     const updates = [];
     winners.forEach(user => {

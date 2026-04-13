@@ -502,3 +502,58 @@ input, select, textarea, button { font-family: inherit; }
 #_donPanel > div:first-child:active {
   cursor: grabbing;
 }
+
+/* ── CONFIG MENU ── */
+.cfg-section { padding: 10px 16px; }
+.cfg-section-title {
+  font-size: 0.68rem; font-weight: 700; color: var(--gold);
+  text-transform: uppercase; letter-spacing: 0.1em;
+  margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+}
+.cfg-row {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 8px; font-size: 0.78rem;
+}
+.cfg-label { color: var(--muted); flex: 1; min-width: 0; }
+.cfg-toggle {
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  color: var(--muted); cursor: pointer; padding: 4px 10px; border-radius: 6px;
+  font-size: 0.72rem; font-weight: 700; transition: all 0.2s; white-space: nowrap;
+}
+.cfg-toggle.active {
+  background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.35); color: var(--success);
+}
+.cfg-select {
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text); padding: 4px 8px; border-radius: 6px;
+  font-size: 0.72rem; outline: none; max-width: 130px;
+}
+.cfg-range { flex: 1; accent-color: var(--red); }
+.cfg-val { font-size: 0.7rem; color: var(--gold); min-width: 32px; text-align: right; }
+.cfg-check { accent-color: var(--red); width: 14px; height: 14px; cursor: pointer; }
+.cfg-input {
+  flex: 1; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text); padding: 5px 8px; border-radius: 6px; font-size: 0.72rem; outline: none;
+}
+.cfg-input:focus { border-color: rgba(201,168,76,0.4); }
+.cfg-input::placeholder { color: var(--muted); }
+.cfg-input-sm {
+  width: 70px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text); padding: 4px 8px; border-radius: 6px; font-size: 0.72rem; outline: none; text-align: center;
+}
+.cfg-btn-test {
+  width: 100%; margin-top: 6px; padding: 7px; border-radius: 8px;
+  background: rgba(201,168,76,0.1); border: 1px solid rgba(201,168,76,0.25);
+  color: var(--gold); cursor: pointer; font-size: 0.75rem; font-weight: 700; transition: all 0.2s;
+}
+.cfg-btn-test:hover { background: rgba(201,168,76,0.2); }
+.cfg-btn-danger {
+  width: 100%; margin-top: 6px; padding: 7px; border-radius: 8px;
+  background: rgba(226,34,39,0.1); border: 1px solid rgba(226,34,39,0.25);
+  color: var(--red); cursor: pointer; font-size: 0.75rem; font-weight: 700; transition: all 0.2s;
+}
+.cfg-btn-danger:hover { background: rgba(226,34,39,0.2); }
+.cfg-divider {
+  height: 1px; margin: 4px 0;
+  background: linear-gradient(90deg, transparent, rgba(201,168,76,0.15), transparent);
+}
